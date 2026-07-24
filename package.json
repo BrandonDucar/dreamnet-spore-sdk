@@ -1,0 +1,30 @@
+{
+  "name": "@dreamnet/spore-sdk",
+  "version": "1.0.0",
+  "description": "Open-Source Interoperability Kit & Spore Node Runtime for DreamNet",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx examples/test-spore-interop.ts"
+  },
+  "keywords": [
+    "dreamnet",
+    "spore-sdk",
+    "vacuum-spike",
+    "proof-drop",
+    "zao",
+    "interoperability"
+  ],
+  "author": "DreamNet Open Core Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "typescript": "^5.4.5",
+    "tsx": "^4.7.2"
+  }
+}
