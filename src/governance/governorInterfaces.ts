@@ -6,14 +6,28 @@ export interface BudgetPolicyConfig {
 
 export interface VelocityPolicyConfig {
   targetTokensPerSecond: number;
-  throttleIntensity: number; // 0.0 to 1.0
-  maxQueueDepth: number;
+  burstAllowance: number;
+  bucketCapacityTokens: number;
+}
+
+export interface BudgetReservation {
+  reservationId: string;
+  amountUsd: number;
+  reservedAt: string;
+  expiresAt: string;
+  status: 'RESERVED' | 'SETTLED' | 'RELEASED';
 }
 
 export class ConfigurableGovernor {
   private budgetConfig: BudgetPolicyConfig;
   private velocityConfig: VelocityPolicyConfig;
   private currentSpendUsd = 0;
+  private reservedSpendUsd = 0;
+  private reservations: Map<string, BudgetReservation> = new Map();
+
+  // Leaky Bucket State
+  private tokensInBucket: number;
+  private lastRefillTimestampMs: number;
 
   constructor(
     budget: Partial<BudgetPolicyConfig> = {},
@@ -26,25 +40,77 @@ export class ConfigurableGovernor {
     };
     this.velocityConfig = {
       targetTokensPerSecond: velocity.targetTokensPerSecond ?? 1000,
-      throttleIntensity: velocity.throttleIntensity ?? 0.0,
-      maxQueueDepth: velocity.maxQueueDepth ?? 500
+      burstAllowance: velocity.burstAllowance ?? 500,
+      bucketCapacityTokens: velocity.bucketCapacityTokens ?? 5000
     };
+    this.tokensInBucket = this.velocityConfig.bucketCapacityTokens;
+    this.lastRefillTimestampMs = Date.now();
   }
 
-  public recordSpend(usdAmount: number): boolean {
-    this.currentSpendUsd += usdAmount;
-    if (this.currentSpendUsd >= this.budgetConfig.dailyCapUsd) {
-      console.warn(`⚠️ [Governor Alert] Budget cap reached: $${this.currentSpendUsd.toFixed(2)} / $${this.budgetConfig.dailyCapUsd.toFixed(2)} ${this.budgetConfig.currency}`);
-      return false; // Action blocked
+  /**
+   * Atomic Budget Reservation (Prevents Concurrent Worker Race Conditions)
+   */
+  public reserveSpend(requestedUsd: number): BudgetReservation | null {
+    const effectiveSpend = this.currentSpendUsd + this.reservedSpendUsd;
+    if (effectiveSpend + requestedUsd > this.budgetConfig.dailyCapUsd) {
+      console.warn(`⚠️ [Governor Race Shield] Reservation denied: Requested $${requestedUsd.toFixed(2)} exceeds cap $${this.budgetConfig.dailyCapUsd.toFixed(2)}`);
+      return null;
     }
-    return true; // Action allowed
+
+    const reservationId = `res_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const reservation: BudgetReservation = {
+      reservationId,
+      amountUsd: requestedUsd,
+      reservedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 60000).toISOString(), // 60s expiration
+      status: 'RESERVED'
+    };
+
+    this.reservedSpendUsd += requestedUsd;
+    this.reservations.set(reservationId, reservation);
+    return reservation;
   }
 
-  public getStatus(): { spend: number; limit: number; allowed: boolean } {
+  /**
+   * Settle Budget Reservation with Actual Amount Spent
+   */
+  public settleSpend(reservationId: string, actualUsdSpent: number): boolean {
+    const reservation = this.reservations.get(reservationId);
+    if (!reservation || reservation.status !== 'RESERVED') {
+      return false;
+    }
+
+    this.reservedSpendUsd -= reservation.amountUsd;
+    this.currentSpendUsd += actualUsdSpent;
+    reservation.status = 'SETTLED';
+    return true;
+  }
+
+  /**
+   * Leaky-Bucket Token Rate Limiting
+   */
+  public consumeTokens(tokens: number): boolean {
+    const now = Date.now();
+    const elapsedSeconds = (now - this.lastRefillTimestampMs) / 1000;
+    this.tokensInBucket = Math.min(
+      this.velocityConfig.bucketCapacityTokens,
+      this.tokensInBucket + elapsedSeconds * this.velocityConfig.targetTokensPerSecond
+    );
+    this.lastRefillTimestampMs = now;
+
+    if (this.tokensInBucket >= tokens) {
+      this.tokensInBucket -= tokens;
+      return true; // Allowed
+    }
+    return false; // Throttled
+  }
+
+  public getStatus(): { spend: number; reserved: number; limit: number; tokensAvailable: number } {
     return {
       spend: this.currentSpendUsd,
+      reserved: this.reservedSpendUsd,
       limit: this.budgetConfig.dailyCapUsd,
-      allowed: this.currentSpendUsd < this.budgetConfig.dailyCapUsd
+      tokensAvailable: Math.round(this.tokensInBucket)
     };
   }
 }

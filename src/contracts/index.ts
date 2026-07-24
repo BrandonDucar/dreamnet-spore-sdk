@@ -1,16 +1,27 @@
 import crypto from 'crypto';
 
 /**
- * 1. StandardObservation (Sensory Perception)
+ * 1. StandardObservation (Sensory Perception Envelope)
  */
 export interface StandardObservation {
   schemaVersion: 'observation.v1';
   timestamp: string;
   provenance: string;
-  confidence: number; // 0.0 to 1.0
-  source: string;
+  confidence: {
+    score: number; // 0.0 to 1.0
+    method: 'HEURISTIC' | 'MODEL_INFERENCE' | 'PROVENANCE_ASSURED';
+    assessor: string;
+  };
+  source: {
+    domain: string;
+    endpoint?: string;
+    sourceType: 'poll' | 'stream' | 'webhook';
+  };
   evidence: Record<string, any>;
-  hashes: { payloadHash: string };
+  hashes: {
+    canonicalPayloadHash: string;
+    hashAlgorithm: 'sha256:jcs-rfc8785:v1';
+  };
   metadata: Record<string, any>;
   health: 'HEALTHY' | 'DEGRADED';
 }
@@ -71,7 +82,7 @@ export interface ProofArtifact {
 }
 
 /**
- * 6. PortableReceipt (Immutable Receipt Wrapper)
+ * 6. PortableReceipt (Immutable Receipt Envelope)
  */
 export interface PortableReceipt {
   schemaVersion: 'receipt.v1';
@@ -107,9 +118,27 @@ export interface PortableClaim {
 }
 
 /**
- * Canonical SHA-256 Hashing Utility
+ * RFC 8785 Canonical JSON Serialization (JCS)
+ * Recursively sorts keys and serializes deterministic JSON string.
+ */
+export function canonicalJsonStringify(obj: any): string {
+  if (obj === null || typeof obj !== 'object') {
+    return JSON.stringify(obj);
+  }
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(canonicalJsonStringify).join(',') + ']';
+  }
+  const sortedKeys = Object.keys(obj).sort();
+  const keyValues = sortedKeys
+    .filter(k => obj[k] !== undefined)
+    .map(k => `${JSON.stringify(k)}:${canonicalJsonStringify(obj[k])}`);
+  return '{' + keyValues.join(',') + '}';
+}
+
+/**
+ * Canonical SHA-256 Hashing Utility (RFC 8785 / JCS Compliant)
  */
 export function computeCanonicalHash(data: Record<string, any>): string {
-  const jsonStr = JSON.stringify(data, Object.keys(data).sort());
-  return crypto.createHash('sha256').update(jsonStr).digest('hex');
+  const canonicalJson = canonicalJsonStringify(data);
+  return crypto.createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
 }

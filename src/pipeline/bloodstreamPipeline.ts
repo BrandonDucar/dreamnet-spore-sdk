@@ -25,12 +25,13 @@ export class BloodstreamPipeline {
       return { success: false, isDuplicate: false, tags: [] };
     }
 
-    // 2. Deduplication
-    const hash = rawObs.hashes.payloadHash;
+    // 2. Deduplication (RFC 8785 Canonical Payload Hash)
+    const hash = rawObs.hashes.canonicalPayloadHash;
     if (this.processedHashes.has(hash)) {
       console.log(`ℹ️ [Bloodstream Deduplication] Skipping duplicate observation hash: ${hash.substring(0, 12)}...`);
       return { success: true, isDuplicate: true, tags: ['DUPLICATE'] };
     }
+
     this.processedHashes.add(hash);
 
     // 3. Downstream Classification & Enrichment

@@ -1,37 +1,36 @@
-import crypto from 'crypto';
-
-export interface StandardObservation {
-  timestamp: string;
-  provenance: string;
-  confidence: number;
-  source: string;
-  evidence: Record<string, any>;
-  hashes: { payloadHash: string };
-  metadata: Record<string, any>;
-  health: 'HEALTHY' | 'DEGRADED';
-}
+import { StandardObservation, computeCanonicalHash } from '../contracts/index.js';
 
 export function createObservationPayload(params: {
   provenance: string;
-  source: string;
+  sourceDomain: string;
+  sourceType?: 'poll' | 'stream' | 'webhook';
   evidence: Record<string, any>;
-  confidence?: number;
+  confidenceScore?: number;
+  confidenceMethod?: 'HEURISTIC' | 'MODEL_INFERENCE' | 'PROVENANCE_ASSURED';
   metadata?: Record<string, any>;
   health?: 'HEALTHY' | 'DEGRADED';
 }): StandardObservation {
-  const payloadStr = JSON.stringify(params.evidence);
-  const payloadHash = crypto.createHash('sha256').update(payloadStr).digest('hex');
+  const payloadHash = computeCanonicalHash(params.evidence);
 
   return {
     schemaVersion: 'observation.v1',
     timestamp: new Date().toISOString(),
     provenance: params.provenance,
-    confidence: params.confidence ?? 0.95,
-    source: params.source,
+    confidence: {
+      score: params.confidenceScore ?? 0.95,
+      method: params.confidenceMethod || 'PROVENANCE_ASSURED',
+      assessor: params.provenance
+    },
+    source: {
+      domain: params.sourceDomain,
+      sourceType: params.sourceType || 'poll'
+    },
     evidence: params.evidence,
-    hashes: { payloadHash },
+    hashes: {
+      canonicalPayloadHash: payloadHash,
+      hashAlgorithm: 'sha256:jcs-rfc8785:v1'
+    },
     metadata: params.metadata || {},
     health: params.health || 'HEALTHY'
   };
 }
-
