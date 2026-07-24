@@ -1,4 +1,4 @@
-import { StandardObservation } from '../observation/observationContract.js';
+import type { StandardObservation } from '../contracts/index.js';
 export interface ClassifierResult {
     isMatch: boolean;
     score: number;

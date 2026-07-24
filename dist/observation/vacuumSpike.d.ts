@@ -1,4 +1,4 @@
-import { StandardObservation } from './observationContract.js';
+import { type StandardObservation } from './observationContract.js';
 export interface RateLimitPolicy {
     requestsPerMinute: number;
     burstAllowance: number;
@@ -25,9 +25,6 @@ export interface VacuumSpikeManifest {
 }
 export declare abstract class VacuumSpike {
     abstract manifest: VacuumSpikeManifest;
-    /**
-     * SSRF Protection: Validates target URL against manifest domain allowlists & private IP blocks
-     */
     protected validateTargetUrl(urlStr: string): {
         valid: boolean;
         reason?: string;

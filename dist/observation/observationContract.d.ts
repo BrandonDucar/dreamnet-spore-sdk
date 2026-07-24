@@ -1,5 +1,5 @@
-import { StandardObservation } from '../contracts/index.js';
-export { StandardObservation };
+import { type StandardObservation } from '../contracts/index.js';
+export type { StandardObservation };
 export interface CreateObservationOptions {
     provenance: string;
     sourceDomain: string;

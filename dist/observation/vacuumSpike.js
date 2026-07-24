@@ -1,8 +1,5 @@
 import { createObservationPayload } from './observationContract.js';
 export class VacuumSpike {
-    /**
-     * SSRF Protection: Validates target URL against manifest domain allowlists & private IP blocks
-     */
     validateTargetUrl(urlStr) {
         try {
             const parsed = new URL(urlStr);

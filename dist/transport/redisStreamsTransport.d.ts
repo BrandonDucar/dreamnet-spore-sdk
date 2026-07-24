@@ -1,5 +1,5 @@
 import { ObservationTransport, ObservationHandler, Unsubscribe } from './transportInterfaces.js';
-import { StandardObservation } from '../contracts/index.js';
+import type { StandardObservation } from '../contracts/index.js';
 export declare class RedisStreamsTransport implements ObservationTransport {
     private streamName;
     private redisUrl;
