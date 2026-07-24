@@ -1,5 +1,5 @@
 import { VacuumSpike, VacuumSpikeManifest } from '../observation/vacuumSpike.js';
-import { StandardObservation } from '../observation/observationContract.js';
+import type { StandardObservation } from '../contracts/index.js';
 
 export class LiveCoinGeckoMarketSpike extends VacuumSpike {
   manifest: VacuumSpikeManifest = {
@@ -34,13 +34,16 @@ export class LiveCoinGeckoMarketSpike extends VacuumSpike {
       const response = await fetch(url, {
         headers: { 'Accept': 'application/json' }
       });
+      if (!response.ok) {
+        throw new Error(`CoinGecko API HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json() as any;
 
       return this.createObservation({
         assetIds,
         pricesUsd: data,
         isLivePayload: true
-      }, 0.99, { endpoint: url });
+      }, 0.99, { metadata: { endpoint: url } });
     } catch (err: any) {
       return this.createObservation({ assetIds, error: err.message, isFallback: true }, 0.50, { health: 'DEGRADED' });
     }

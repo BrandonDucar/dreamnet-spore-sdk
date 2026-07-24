@@ -1,30 +1,52 @@
 {
   "name": "@dreamnet/spore-sdk",
-  "version": "1.0.0",
-  "description": "Open-Source Interoperability Kit & Spore Node Runtime for DreamNet",
+  "version": "0.1.0-alpha.1",
+  "description": "Early Technical Preview: Ecosystem-Neutral Interoperability Kit & Spore Node Runtime for DreamNet",
   "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BrandonDucar/dreamnet-spore-sdk.git"
+  },
+  "homepage": "https://github.com/BrandonDucar/dreamnet-spore-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/BrandonDucar/dreamnet-spore-sdk/issues"
+  },
+  "sideEffects": false,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "tsc",
-    "test": "tsx examples/test-spore-interop.ts"
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "npx tsx examples/test-spore-interop.ts"
   },
   "keywords": [
     "dreamnet",
     "spore-sdk",
     "vacuum-spike",
     "proof-drop",
-    "zao",
     "interoperability"
   ],
   "author": "DreamNet Open Core Team",
   "license": "Apache-2.0",
-  "dependencies": {
-    "axios": "^1.7.0",
-    "dotenv": "^16.4.5"
-  },
   "devDependencies": {
     "@types/node": "^20.12.0",
-    "typescript": "^5.4.5",
-    "tsx": "^4.7.2"
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5"
   }
 }

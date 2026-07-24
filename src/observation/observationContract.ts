@@ -1,6 +1,8 @@
-import { StandardObservation, computeCanonicalHash } from '../contracts/index.js';
+import { type StandardObservation, computeCanonicalHash } from '../contracts/index.js';
 
-export function createObservationPayload(params: {
+export type { StandardObservation };
+
+export interface CreateObservationOptions {
   provenance: string;
   sourceDomain: string;
   sourceType?: 'poll' | 'stream' | 'webhook';
@@ -9,7 +11,9 @@ export function createObservationPayload(params: {
   confidenceMethod?: 'HEURISTIC' | 'MODEL_INFERENCE' | 'PROVENANCE_ASSURED';
   metadata?: Record<string, any>;
   health?: 'HEALTHY' | 'DEGRADED';
-}): StandardObservation {
+}
+
+export function createObservationPayload(params: CreateObservationOptions): StandardObservation {
   const payloadHash = computeCanonicalHash(params.evidence);
 
   return {
@@ -28,7 +32,7 @@ export function createObservationPayload(params: {
     evidence: params.evidence,
     hashes: {
       canonicalPayloadHash: payloadHash,
-      hashAlgorithm: 'sha256:jcs-rfc8785:v1'
+      hashAlgorithm: 'sha256:dreamnet-sorted-json:v0'
     },
     metadata: params.metadata || {},
     health: params.health || 'HEALTHY'

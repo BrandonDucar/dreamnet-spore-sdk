@@ -1,4 +1,4 @@
-import { StandardObservation } from '../observation/observationContract.js';
+import type { StandardObservation } from '../contracts/index.js';
 
 export interface ClassifierResult {
   isMatch: boolean;
@@ -17,8 +17,9 @@ export class VitalSignalDetector implements SignalClassifier {
 
   async classify(obs: StandardObservation): Promise<ClassifierResult> {
     const isDegraded = obs.health === 'DEGRADED';
+    const score = obs.confidence.score;
     return {
-      isMatch: isDegraded || obs.confidence < 0.70,
+      isMatch: isDegraded || score < 0.70,
       score: isDegraded ? 0.95 : 0.20,
       tags: isDegraded ? ['DEGRADED_HEALTH', 'ATTENTION_REQUIRED'] : ['NORMAL'],
       reason: isDegraded ? 'Observation emitted degraded health state' : 'Normal vital telemetry'

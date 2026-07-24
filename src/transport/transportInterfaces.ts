@@ -1,4 +1,4 @@
-import { StandardObservation } from '../observation/observationContract.js';
+import type { StandardObservation } from '../contracts/index.js';
 
 export type ObservationHandler = (observation: StandardObservation) => Promise<void>;
 export type Unsubscribe = () => void;

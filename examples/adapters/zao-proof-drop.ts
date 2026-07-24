@@ -21,7 +21,7 @@ export class ZaoProofDropAdapter implements GenericReceiptAdapter<ZaoProofDrop, 
       artifactType: 'ZAO_PROOF_DROP',
       evidenceData: input.payload,
       contentHash: hash,
-      signature: input.signature || `sig_${input.workerId}`,
+      signature: input.signature, // Preserve exact signature (do NOT synthesize fake signatures)
       createdIso: new Date().toISOString()
     };
   }
@@ -37,14 +37,31 @@ export class ZaoProofDropAdapter implements GenericReceiptAdapter<ZaoProofDrop, 
 
   async verify(input: ProofArtifact): Promise<VerificationResult> {
     const recomputedHash = computeCanonicalHash(input.evidenceData);
-    const isValid = recomputedHash === input.contentHash;
+    const isHashMatch = recomputedHash === input.contentHash;
+    const hasSignature = Boolean(input.signature);
 
     return {
       schemaVersion: 'verification.v1',
-      isValid,
+      isValid: isHashMatch,
       subjectHash: input.contentHash,
       verifiedAt: new Date().toISOString(),
-      reasons: isValid ? ['Content hash matches evidence payload'] : ['Hash mismatch detected']
+      checks: [
+        {
+          type: 'CONTENT_INTEGRITY',
+          status: isHashMatch ? 'VALID' : 'INVALID',
+          reason: isHashMatch ? 'Payload content hash matches canonical SHA-256 JCS digest' : 'Content hash mismatch detected'
+        },
+        {
+          type: 'SIGNATURE',
+          status: hasSignature ? 'VALID' : 'NOT_CHECKED',
+          reason: hasSignature ? 'Signature present on proof artifact' : 'Unsigned proof artifact (No cryptographic signature provided)'
+        },
+        {
+          type: 'IDENTITY',
+          status: 'NOT_CHECKED',
+          reason: 'Worker public key attestation not provided in prototype verification scope'
+        }
+      ]
     };
   }
 }

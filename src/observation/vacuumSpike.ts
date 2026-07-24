@@ -1,4 +1,4 @@
-import { StandardObservation, createObservationPayload } from './observationContract.js';
+import { type StandardObservation, createObservationPayload } from './observationContract.js';
 
 export interface RateLimitPolicy {
   requestsPerMinute: number;
@@ -30,20 +30,15 @@ export interface VacuumSpikeManifest {
 export abstract class VacuumSpike {
   abstract manifest: VacuumSpikeManifest;
 
-  /**
-   * SSRF Protection: Validates target URL against manifest domain allowlists & private IP blocks
-   */
   protected validateTargetUrl(urlStr: string): { valid: boolean; reason?: string } {
     try {
       const parsed = new URL(urlStr);
 
-      // 1. Host allowlist validation
       const isAllowed = this.manifest.domains.some(d => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`));
       if (!isAllowed) {
         return { valid: false, reason: `Host "${parsed.hostname}" is not in manifest domain allowlist` };
       }
 
-      // 2. Private IP SSRF Blocking
       const host = parsed.hostname;
       const isPrivateIp = 
         host === 'localhost' ||
@@ -65,14 +60,19 @@ export abstract class VacuumSpike {
     }
   }
 
-  protected createObservation(evidence: Record<string, any>, confidenceScore = 0.95, metadata = {}): StandardObservation {
+  protected createObservation(
+    evidence: Record<string, any>,
+    confidenceScore = 0.95,
+    options: { metadata?: Record<string, any>; health?: 'HEALTHY' | 'DEGRADED' } = {}
+  ): StandardObservation {
     return createObservationPayload({
       provenance: `VacuumSpike:${this.manifest.id}`,
       sourceDomain: this.manifest.domains[0] || 'Unknown Domain',
       sourceType: this.manifest.sourceType,
       evidence,
       confidenceScore,
-      metadata
+      metadata: options.metadata || {},
+      health: options.health || 'HEALTHY'
     });
   }
 

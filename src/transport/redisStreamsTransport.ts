@@ -1,5 +1,5 @@
 import { ObservationTransport, ObservationHandler, Unsubscribe } from './transportInterfaces.js';
-import { StandardObservation } from '../observation/observationContract.js';
+import type { StandardObservation } from '../contracts/index.js';
 
 export class RedisStreamsTransport implements ObservationTransport {
   private streamName: string;
@@ -11,7 +11,7 @@ export class RedisStreamsTransport implements ObservationTransport {
   }
 
   async publish(observation: StandardObservation): Promise<void> {
-    console.log(`📡 [RedisStreamsTransport] Publishing observation hash ${observation.hashes.payloadHash.substring(0, 12)}... to stream "${this.streamName}" (${this.redisUrl})`);
+    console.log(`📡 [RedisStreamsTransport] Publishing observation hash ${observation.hashes.canonicalPayloadHash.substring(0, 12)}... to stream "${this.streamName}" (${this.redisUrl})`);
   }
 
   async subscribe(handler: ObservationHandler): Promise<Unsubscribe> {

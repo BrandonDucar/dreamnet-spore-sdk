@@ -1,5 +1,5 @@
 import { VacuumSpike, VacuumSpikeManifest } from '../observation/vacuumSpike.js';
-import { StandardObservation } from '../observation/observationContract.js';
+import type { StandardObservation } from '../contracts/index.js';
 
 export class LiveGithubTrendingSpike extends VacuumSpike {
   manifest: VacuumSpikeManifest = {
@@ -34,6 +34,9 @@ export class LiveGithubTrendingSpike extends VacuumSpike {
       const response = await fetch(url, {
         headers: { 'User-Agent': 'DreamNet-Spore-SDK/1.0' }
       });
+      if (!response.ok) {
+        throw new Error(`GitHub API HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json() as any;
       const topRepos = (data.items || []).slice(0, 5).map((item: any) => ({
         fullName: item.full_name,
@@ -47,7 +50,7 @@ export class LiveGithubTrendingSpike extends VacuumSpike {
         totalCount: data.total_count,
         topRepositories: topRepos,
         isLivePayload: true
-      }, 0.99, { endpoint: url });
+      }, 0.99, { metadata: { endpoint: url } });
     } catch (err: any) {
       return this.createObservation({ query, error: err.message, isFallback: true }, 0.50, { health: 'DEGRADED' });
     }

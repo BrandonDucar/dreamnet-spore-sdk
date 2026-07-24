@@ -20,7 +20,7 @@ export interface StandardObservation {
   evidence: Record<string, any>;
   hashes: {
     canonicalPayloadHash: string;
-    hashAlgorithm: 'sha256:jcs-rfc8785:v1';
+    hashAlgorithm: 'sha256:dreamnet-sorted-json:v0';
   };
   metadata: Record<string, any>;
   health: 'HEALTHY' | 'DEGRADED';
@@ -95,6 +95,15 @@ export interface PortableReceipt {
 }
 
 /**
+ * Detailed Verification Check Descriptor
+ */
+export interface VerificationCheck {
+  type: 'CONTENT_INTEGRITY' | 'SIGNATURE' | 'IDENTITY' | 'AUTHORIZATION' | 'FRESHNESS';
+  status: 'VALID' | 'INVALID' | 'NOT_CHECKED';
+  reason: string;
+}
+
+/**
  * 7. VerificationResult (Verification Output)
  */
 export interface VerificationResult {
@@ -102,7 +111,7 @@ export interface VerificationResult {
   isValid: boolean;
   subjectHash: string;
   verifiedAt: string;
-  reasons: string[];
+  checks: VerificationCheck[];
 }
 
 /**
@@ -118,25 +127,33 @@ export interface PortableClaim {
 }
 
 /**
- * RFC 8785 Canonical JSON Serialization (JCS)
- * Recursively sorts keys and serializes deterministic JSON string.
+ * Deterministic JSON Serialization (DreamNet Sorted JSON v0)
  */
 export function canonicalJsonStringify(obj: any): string {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj === 'boolean' || typeof obj === 'string') {
+    return JSON.stringify(obj);
+  }
+  if (typeof obj === 'number') {
+    if (!Number.isFinite(obj)) {
+      throw new Error(`Canonical JSON Error: Non-finite number ${obj} cannot be serialized.`);
+    }
     return JSON.stringify(obj);
   }
   if (Array.isArray(obj)) {
-    return '[' + obj.map(canonicalJsonStringify).join(',') + ']';
+    return '[' + obj.map(item => (item === undefined ? 'null' : canonicalJsonStringify(item))).join(',') + ']';
   }
-  const sortedKeys = Object.keys(obj).sort();
-  const keyValues = sortedKeys
-    .filter(k => obj[k] !== undefined)
-    .map(k => `${JSON.stringify(k)}:${canonicalJsonStringify(obj[k])}`);
-  return '{' + keyValues.join(',') + '}';
+  if (typeof obj === 'object') {
+    const sortedKeys = Object.keys(obj).sort();
+    const keyValues = sortedKeys
+      .filter(k => obj[k] !== undefined && typeof obj[k] !== 'function' && typeof obj[k] !== 'symbol')
+      .map(k => `${JSON.stringify(k)}:${canonicalJsonStringify(obj[k])}`);
+    return '{' + keyValues.join(',') + '}';
+  }
+  throw new Error(`Canonical JSON Error: Unsupported value type ${typeof obj}`);
 }
 
 /**
- * Canonical SHA-256 Hashing Utility (RFC 8785 / JCS Compliant)
+ * Canonical SHA-256 Hashing Utility (DreamNet Sorted JSON v0)
  */
 export function computeCanonicalHash(data: Record<string, any>): string {
   const canonicalJson = canonicalJsonStringify(data);
