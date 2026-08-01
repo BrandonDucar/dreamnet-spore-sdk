@@ -7,6 +7,7 @@ import {
 } from './envelope.js';
 import { assertProofDropPayload } from './proofDrop.js';
 import { assertSporeLeasePayload } from './lease.js';
+import { assertFederationCanaryPayload, FEDERATION_CANARY_SCHEMA } from './federationCanary.js';
 
 export interface IssuerKeyRecord {
   issuerId: string;
@@ -71,6 +72,9 @@ export function createCoreSchemaRegistry(): SchemaRegistry {
     })
     .register('https://schemas.dreamnet.ink/spore/lease.v1.json', (payload) => {
       assertSporeLeasePayload(payload as Parameters<typeof assertSporeLeasePayload>[0]);
+    })
+    .register(FEDERATION_CANARY_SCHEMA, (payload) => {
+      assertFederationCanaryPayload(payload as Parameters<typeof assertFederationCanaryPayload>[0]);
     });
 }
 

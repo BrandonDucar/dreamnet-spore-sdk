@@ -1,6 +1,7 @@
 import { verifyEnvelope, } from './envelope.js';
 import { assertProofDropPayload } from './proofDrop.js';
 import { assertSporeLeasePayload } from './lease.js';
+import { assertFederationCanaryPayload, FEDERATION_CANARY_SCHEMA } from './federationCanary.js';
 export class SchemaRegistry {
     validators = new Map();
     register(schema, validator) {
@@ -33,6 +34,9 @@ export function createCoreSchemaRegistry() {
     })
         .register('https://schemas.dreamnet.ink/spore/lease.v1.json', (payload) => {
         assertSporeLeasePayload(payload);
+    })
+        .register(FEDERATION_CANARY_SCHEMA, (payload) => {
+        assertFederationCanaryPayload(payload);
     });
 }
 function parseOptionalTimestamp(value) {

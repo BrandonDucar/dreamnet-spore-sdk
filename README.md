@@ -13,6 +13,8 @@ Spore is the interoperability layer. It lets another runtime participate in Drea
 - signed `SporeEnvelope`, `ProofDrop`, and fail-closed `SporeLease` contracts
 - key resolution, schema policy, replay classification, and revocation hooks
 - CloudEvents 1.0 transport mapping without redefining the signed envelope
+- a paper-only federation canary state machine spanning Trappers, Proof Drops,
+  independently verified claims, Whale League theses, and University evidence
 - observation ingestion with tamper rejection and deduplication
 - isolated classifiers and configurable governance
 - in-memory transport and an explicitly non-production Redis Streams placeholder
@@ -88,6 +90,8 @@ through `pnpm test:examples` and are not conformance evidence.
 See [Spore Envelope v1](./docs/spore-envelope-v1.md) for the protocol boundary.
 See [Runtime Verification Boundary](./docs/runtime-verification-boundary.md)
 for NATS and Temporal adapter integration.
+See [Federation Canary v1](./docs/federation-canary-v1.md) for the bounded ZAO
+interoperability workflow and yellow/red receipt behavior.
 
 ## Portable Contracts
 
