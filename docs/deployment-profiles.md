@@ -1,36 +1,35 @@
-# 🚀 Spore Node Deployment Profiles
+# Spore Deployment Profiles
 
-DreamNet Spore SDK supports 3 deployment profiles ranging from zero-dependency local development to distributed enterprise clusters.
+Only the local profile is implemented in this repository today. The other
+profiles describe adapter targets and must not be treated as deployed runtime
+capabilities.
 
----
+## Local profile
 
-## 1. 🏡 Local Profile (Zero-Dependency)
-- **Transport**: `InMemoryTransport`
-- **Database**: In-memory / SQLite
-- **Best for**: Rapid local testing, Zaal agent experiments, and quick developer onboarding.
+- Transport: `InMemoryTransport`
+- Verification: local RFC 8785, SHA-256, and Ed25519 operations
+- Persistence: none
+- Best for: deterministic protocol tests and adapter development
 
-```typescript
-import { InMemoryTransport } from '@dreamnet/spore-sdk';
-const transport = new InMemoryTransport();
-```
+`InMemoryTransport` is process-local. Subscriber failures are not durable and
+there is no acknowledgement or replay mechanism.
 
----
+## Durable worker profile
 
-## 2. ☁️ Starter Cloud Profile (Railway / Docker)
-- **Transport**: `RedisStreamsTransport`
-- **Database**: PostgreSQL (Neon / Supabase)
-- **Persistence**: Redis Streams & Railway Persistent Volume
-- **Best for**: 24/7 background workers, Notion drips, and GoHighLevel CRM webhooks.
+Status: planned.
 
-```typescript
-import { RedisStreamsTransport } from '@dreamnet/spore-sdk';
-const transport = new RedisStreamsTransport({ redisUrl: process.env.REDIS_URL });
-```
+The existing `RedisStreamsTransport` is a logging placeholder. It does not
+perform Redis commands and must not be used for production delivery.
 
----
+A production implementation must provide consumer groups, explicit
+acknowledgement, idempotency, retry, backpressure, dead-letter handling,
+metrics, and replay tests.
 
-## 3. 🌐 Distributed Enterprise Profile
-- **Transport**: `NatsJetStreamTransport` / `KafkaTransport`
-- **Database**: Distributed Postgres + Vector DB (Qdrant / Milvus)
-- **Edge Routing**: Cloudflare Workers
-- **Best for**: High-throughput multi-agent swarms processing 1,000+ tokens/sec.
+## Federated organism profile
+
+Status: planned.
+
+The intended runtime uses NATS JetStream for durable event transport and
+Temporal Nexus for cross-organism workflows. Neither adapter is implemented
+in this public package yet. Both must consume `SporeEnvelope v1` unchanged and
+pass the repository's golden vectors before being advertised as compatible.

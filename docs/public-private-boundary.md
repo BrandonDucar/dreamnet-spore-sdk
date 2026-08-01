@@ -1,37 +1,35 @@
-# Public / Private Architectural Boundary
+# Public and Private Boundary
 
-This document outlines the strict boundary between the **Public Open-Source Spore SDK** and **Private Mother DreamNet Core**.
+The public SDK defines portable contracts and verification behavior. An
+independent organism can implement those contracts without receiving access
+to DreamNet's databases, credentials, deployment topology, prompts, private
+datasets, or internal policies.
 
----
+## Public SDK
 
-```
-                       ┌──────────────────────────────────────────────┐
-                       │           MOTHER DREAMNET (Private)          │
-                       │  • Private Skip-Tracing & Wealth Vault       │
-                       │  • Master Quorum Consensus & Agent Passports │
-                       │  • Proprietary Signal Screener               │
-                       └──────────────────────┬───────────────────────┘
-                                              │
-                              (Secure Encrypted Sync Protocol)
-                                              │
-                       ┌──────────────────────▼───────────────────────┐
-                       │     DREAMNET SPORE SDK / SPORE NODE (Public) │
-                       │  • Open VacuumSpike Interfaces & Observation │
-                       │  • Transport Abstraction (InMemory, Redis)   │
-                       │  • Portable Receipt & Proof Drop Adapters     │
-                       └──────────────────────────────────────────────┘
-```
+- RFC 8785 canonicalization and SHA-256 content IDs
+- Ed25519-signed `SporeEnvelope v1`
+- immutable Proof Drop references
+- fail-closed capability leases
+- observation and portable artifact types
+- deterministic conformance fixtures
+- transport interfaces and local in-memory development transport
 
----
+The package does not currently contain a complete Spore node runtime, health
+server, Redis implementation, NATS implementation, Kafka implementation, key
+registry, revocation service, or encrypted synchronization service.
 
-## 🌐 Public Scope (`dreamnet-spore-sdk`)
-- **Spore Runtime**: Node lifecycle, plugin registration, health endpoints.
-- **Observation SDK**: `VacuumSpike` interface, observation contracts, hashing.
-- **Governance SDK**: Configurable budget & velocity interfaces (user-defined limits).
-- **Protocol Adapters**: Portable receipt wrapping for ZAO/ZOE (Proof Drops, Spark Capsules).
-- **Transport Abstraction**: Pluggable transport interfaces (`InMemoryTransport`, `RedisStreamsTransport`).
+## Runtime-owned responsibilities
 
-## 🏰 Private Scope (Mother DreamNet)
-- **Proprietary Data Vaults**: High-equity real estate tax rolls, phone/email skip-tracing, and gold allocation models.
-- **Master Quorum Voting**: Swarm consensus engines, prompt chaining, and private agent passports.
-- **Monetization Vault**: Controlled lead release valves ($1,500/pack lead monetization).
+Each organism retains authority over:
+
+- identity and trusted-key resolution
+- replay and revocation state
+- workflow execution and recovery
+- transport credentials and infrastructure
+- private memory and datasets
+- policy evaluation and human approvals
+- budgets, settlement, and signing keys
+
+Interoperability occurs through signed envelopes and explicit capabilities,
+not shared database access or ambient trust.

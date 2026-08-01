@@ -10,8 +10,8 @@ export class ReceiptAdapter {
             timestamp: new Date().toISOString(),
             provenance: `ZAO:ZOEWorker:${proof.workerId}`,
             confidence: {
-                score: 1.0,
-                method: 'PROVENANCE_ASSURED',
+                score: 0.5,
+                method: 'HEURISTIC',
                 assessor: `ZAO:ZOEWorker:${proof.workerId}`
             },
             source: {
@@ -21,7 +21,7 @@ export class ReceiptAdapter {
             evidence: proof.payload,
             hashes: {
                 canonicalPayloadHash: hash,
-                hashAlgorithm: 'sha256:dreamnet-sorted-json:v0'
+                hashAlgorithm: 'sha256:rfc8785'
             },
             metadata: { originalSignature: proof.signature || 'unsigned' },
             health: 'HEALTHY'

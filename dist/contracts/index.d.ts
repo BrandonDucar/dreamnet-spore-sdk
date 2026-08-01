@@ -18,7 +18,7 @@ export interface StandardObservation {
     evidence: Record<string, any>;
     hashes: {
         canonicalPayloadHash: string;
-        hashAlgorithm: 'sha256:dreamnet-sorted-json:v0';
+        hashAlgorithm: 'sha256:rfc8785';
     };
     metadata: Record<string, any>;
     health: 'HEALTHY' | 'DEGRADED';
@@ -116,10 +116,10 @@ export interface PortableClaim {
     createdIso: string;
 }
 /**
- * Deterministic JSON Serialization (DreamNet Sorted JSON v0)
+ * RFC 8785 JSON Canonicalization Scheme serialization.
  */
-export declare function canonicalJsonStringify(obj: any): string;
+export declare function canonicalJsonStringify(obj: unknown): string;
 /**
- * Canonical SHA-256 Hashing Utility (DreamNet Sorted JSON v0)
+ * Canonical SHA-256 hashing utility using RFC 8785 bytes.
  */
-export declare function computeCanonicalHash(data: Record<string, any>): string;
+export declare function computeCanonicalHash(data: unknown): string;

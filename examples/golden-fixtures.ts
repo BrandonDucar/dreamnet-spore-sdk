@@ -17,11 +17,6 @@ const testCases = [
     input: { z: [3, 2, 1], a: { y: 'test', x: true } },
     expectedCanonicalJson: '{"a":{"x":true,"y":"test"},"z":[3,2,1]}'
   },
-  {
-    name: 'Undefined Omission in Objects & Array Normalization',
-    input: { active: true, missing: undefined, list: [1, undefined, 3] },
-    expectedCanonicalJson: '{"active":true,"list":[1,null,3]}'
-  }
 ];
 
 let passed = 0;
@@ -41,3 +36,13 @@ testCases.forEach((tc, idx) => {
 });
 
 console.log(`\n🎉 [Golden Fixtures] ${passed} / ${testCases.length} Test Vectors Passed!`);
+
+try {
+  canonicalJsonStringify({ active: true, missing: undefined });
+  console.error('❌ [Non-I-JSON Fixture] FAILED: undefined was not rejected.');
+  process.exitCode = 1;
+} catch {
+  console.log('✅ [Non-I-JSON Fixture] PASSED: undefined was rejected.');
+}
+
+if (passed !== testCases.length) process.exitCode = 1;

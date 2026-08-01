@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { canonicalizeJson, sha256CanonicalJson } from '../protocol/canonicalize.js';
 
 /**
  * 1. StandardObservation (Sensory Perception Envelope)
@@ -20,7 +20,7 @@ export interface StandardObservation {
   evidence: Record<string, any>;
   hashes: {
     canonicalPayloadHash: string;
-    hashAlgorithm: 'sha256:dreamnet-sorted-json:v0';
+    hashAlgorithm: 'sha256:rfc8785';
   };
   metadata: Record<string, any>;
   health: 'HEALTHY' | 'DEGRADED';
@@ -127,35 +127,15 @@ export interface PortableClaim {
 }
 
 /**
- * Deterministic JSON Serialization (DreamNet Sorted JSON v0)
+ * RFC 8785 JSON Canonicalization Scheme serialization.
  */
-export function canonicalJsonStringify(obj: any): string {
-  if (obj === null || typeof obj === 'boolean' || typeof obj === 'string') {
-    return JSON.stringify(obj);
-  }
-  if (typeof obj === 'number') {
-    if (!Number.isFinite(obj)) {
-      throw new Error(`Canonical JSON Error: Non-finite number ${obj} cannot be serialized.`);
-    }
-    return JSON.stringify(obj);
-  }
-  if (Array.isArray(obj)) {
-    return '[' + obj.map(item => (item === undefined ? 'null' : canonicalJsonStringify(item))).join(',') + ']';
-  }
-  if (typeof obj === 'object') {
-    const sortedKeys = Object.keys(obj).sort();
-    const keyValues = sortedKeys
-      .filter(k => obj[k] !== undefined && typeof obj[k] !== 'function' && typeof obj[k] !== 'symbol')
-      .map(k => `${JSON.stringify(k)}:${canonicalJsonStringify(obj[k])}`);
-    return '{' + keyValues.join(',') + '}';
-  }
-  throw new Error(`Canonical JSON Error: Unsupported value type ${typeof obj}`);
+export function canonicalJsonStringify(obj: unknown): string {
+  return canonicalizeJson(obj);
 }
 
 /**
- * Canonical SHA-256 Hashing Utility (DreamNet Sorted JSON v0)
+ * Canonical SHA-256 hashing utility using RFC 8785 bytes.
  */
-export function computeCanonicalHash(data: Record<string, any>): string {
-  const canonicalJson = canonicalJsonStringify(data);
-  return crypto.createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
+export function computeCanonicalHash(data: unknown): string {
+  return sha256CanonicalJson(data);
 }
