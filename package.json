@@ -34,7 +34,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
-    "test": "tsx --test test/protocol-v1.test.ts test/verification-boundary.test.ts",
+    "test": "tsx --test test/protocol-v1.test.ts test/verification-boundary.test.ts test/monorepo-compat.test.ts",
     "test:examples": "tsx examples/test-spore-interop.ts",
     "prepack": "npm run build"
   },
