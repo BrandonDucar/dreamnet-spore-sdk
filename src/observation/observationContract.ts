@@ -21,8 +21,8 @@ export function createObservationPayload(params: CreateObservationOptions): Stan
     timestamp: new Date().toISOString(),
     provenance: params.provenance,
     confidence: {
-      score: params.confidenceScore ?? 0.95,
-      method: params.confidenceMethod || 'PROVENANCE_ASSURED',
+      score: params.confidenceScore ?? 0.5,
+      method: params.confidenceMethod || 'HEURISTIC',
       assessor: params.provenance
     },
     source: {
@@ -32,7 +32,7 @@ export function createObservationPayload(params: CreateObservationOptions): Stan
     evidence: params.evidence,
     hashes: {
       canonicalPayloadHash: payloadHash,
-      hashAlgorithm: 'sha256:dreamnet-sorted-json:v0'
+      hashAlgorithm: 'sha256:rfc8785'
     },
     metadata: params.metadata || {},
     health: params.health || 'HEALTHY'

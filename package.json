@@ -1,6 +1,6 @@
 {
   "name": "@dreamnet/spore-sdk",
-  "version": "0.1.0-alpha.1",
+  "version": "0.2.0-alpha.0",
   "description": "Early Technical Preview: Ecosystem-Neutral Interoperability Kit & Spore Node Runtime for DreamNet",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -30,10 +30,13 @@
   "engines": {
     "node": ">=20"
   },
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
-    "test": "npx tsx examples/test-spore-interop.ts"
+    "test": "tsx --test test/protocol-v1.test.ts",
+    "test:examples": "tsx examples/test-spore-interop.ts",
+    "prepack": "npm run build"
   },
   "keywords": [
     "dreamnet",
@@ -48,5 +51,10 @@
     "@types/node": "^20.12.0",
     "tsx": "^4.7.2",
     "typescript": "^5.4.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

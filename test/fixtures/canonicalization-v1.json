@@ -1,0 +1,30 @@
+[
+  {
+    "name": "nested-unicode",
+    "input": {
+      "b": 2,
+      "a": [
+        3,
+        {
+          "é": "value",
+          "z": true
+        }
+      ]
+    },
+    "canonical": "{\"a\":[3,{\"z\":true,\"é\":\"value\"}],\"b\":2}",
+    "sha256": "ccaa5f28d7b1d52ef4cab62f2119f82113b4a27bceaee5da58b25f0699502d5f"
+  },
+  {
+    "name": "utf16-key-order",
+    "input": {
+      "דּ": "Hebrew presentation form",
+      "😀": "Emoji",
+      "€": "Euro",
+      "ö": "Latin small o diaeresis",
+      "": "Control",
+      "1": "ASCII",
+      "\r": "Carriage return"
+    },
+    "canonical": "{\"\\r\":\"Carriage return\",\"1\":\"ASCII\",\"\":\"Control\",\"ö\":\"Latin small o diaeresis\",\"€\":\"Euro\",\"😀\":\"Emoji\",\"דּ\":\"Hebrew presentation form\"}"
+  }
+]

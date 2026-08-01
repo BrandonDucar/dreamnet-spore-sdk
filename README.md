@@ -4,16 +4,17 @@ Portable contracts and runtime adapters for exchanging observations, assignments
 
 Spore is the interoperability layer. It lets another runtime participate in DreamNet without sharing DreamNet's database, deployment topology, or model provider.
 
-> Status: early technical preview (`0.1.0-alpha.1`). Interfaces may evolve before a stable release.
+> Status: early technical preview (`0.2.0-alpha.0`). Interfaces may evolve before a stable release.
 
 ## What It Provides
 
 - typed portable contracts for observations, assignments, capabilities, results, claims, receipts, and verification
-- deterministic JSON canonicalization and SHA-256 content hashing
+- RFC 8785 canonicalization, domain-separated content IDs, and Ed25519 signatures
+- signed `SporeEnvelope`, `ProofDrop`, and fail-closed `SporeLease` contracts
 - observation ingestion with tamper rejection and deduplication
 - isolated classifiers and configurable governance
-- in-memory and Redis Streams transports
-- receipt and x402 adapters
+- in-memory transport and an explicitly non-production Redis Streams placeholder
+- experimental receipt and x402 shape adapters that do not establish settlement
 - live GitHub and CoinGecko sensory spikes
 - examples for weather, market, repository, and cross-system Proof Drop flows
 
@@ -25,6 +26,7 @@ This repository currently builds from source:
 git clone https://github.com/BrandonDucar/dreamnet-spore-sdk.git
 cd dreamnet-spore-sdk
 pnpm install
+pnpm typecheck
 pnpm build
 pnpm test
 ```
@@ -36,7 +38,7 @@ Node.js 20 or later is required.
 ```text
 external source
   -> StandardObservation
-  -> canonical hash verification
+  -> signed Spore envelope verification
   -> deduplication
   -> isolated classifiers
   -> transport
@@ -64,7 +66,24 @@ const result = await pipeline.process(observation);
 if (!result.success) throw new Error(result.error);
 ```
 
-A valid observation includes its provenance, source metadata, evidence, confidence, and the canonical SHA-256 hash of its evidence payload.
+A valid v1 envelope binds provenance, source metadata, evidence, confidence,
+audience, freshness, policy references and lineage into one content ID and
+Ed25519 signature. Changing any signed field invalidates the envelope.
+
+## Security Core
+
+`SporeEnvelope v1` is the common immutable wrapper. A Proof Drop is sealed
+once; later verification and claims are separate envelopes referencing its
+content ID. Leases grant only explicitly listed capabilities and fail closed
+when missing, expired, revoked, addressed to another organism, or signed by
+the wrong key.
+
+The deterministic `pnpm test` suite covers RFC 8785 vectors, malformed I-JSON,
+wrong keys, tampering, freshness, audience, complete content references and
+lease authorization. Live network demonstrations remain available separately
+through `pnpm test:examples` and are not conformance evidence.
+
+See [Spore Envelope v1](./docs/spore-envelope-v1.md) for the protocol boundary.
 
 ## Portable Contracts
 
@@ -81,13 +100,20 @@ A valid observation includes its provenance, source metadata, evidence, confiden
 
 ## Design Boundaries
 
-Spore does not decide global priorities, replace an orchestrator, or make trust claims by itself. It provides portable envelopes and verification hooks so independent organisms can exchange evidence while retaining their own policy and execution authority.
+Spore does not decide global priorities, replace an orchestrator, or make trust
+claims by itself. It provides portable envelopes and verification hooks so
+independent organisms can exchange evidence while retaining their own policy
+and execution authority.
+
+The current Redis Streams class and x402 adapter are compatibility scaffolds,
+not production transport or payment verification. Do not use them as evidence
+of durable delivery or settlement.
 
 ## Roadmap
 
 - publish the package to npm
-- replace `Record<string, any>` boundaries with schema-validated payloads
-- add signed identity and freshness verification
+- replace remaining legacy `Record<string, any>` boundaries with runtime schemas
+- add issuer key resolution, revocation and replay stores
 - add durable deduplication
 - add NATS and Cloudflare Queue transports
 - add conformance fixtures and compatibility tests
