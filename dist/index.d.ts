@@ -14,3 +14,5 @@ export * from './protocol/canonicalize.js';
 export * from './protocol/envelope.js';
 export * from './protocol/proofDrop.js';
 export * from './protocol/lease.js';
+export * from './protocol/trust.js';
+export * from './protocol/cloudEvents.js';
