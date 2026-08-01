@@ -17,4 +17,5 @@ export * from './protocol/lease.js';
 export * from './protocol/trust.js';
 export * from './protocol/cloudEvents.js';
 export * from './protocol/legacyMonorepo.js';
+export * from './protocol/federationCanary.js';
 
