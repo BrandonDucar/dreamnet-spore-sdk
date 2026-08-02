@@ -1,0 +1,93 @@
+{
+  "fixtureVersion": "federation-canary-conformance.v1",
+  "note": "Public conformance fixture only. The signer is RFC 8032 test material and is not an operational identity.",
+  "publicKey": {
+    "algorithm": "Ed25519",
+    "format": "spki-der-base64",
+    "value": "MCowBQYDK2VwAyEA11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo="
+  },
+  "canonicalUnsigned": "{\"audience\":[\"gateway:dreamnet\"],\"expiresAt\":\"2026-08-01T13:00:00.000Z\",\"issuedAt\":\"2026-08-01T12:00:00.000Z\",\"issuer\":{\"id\":\"organism:zao\",\"keyId\":\"test-key:rfc8032-1\"},\"kind\":\"RESULT\",\"nonce\":\"zao-canary-conformance-0001\",\"payload\":{\"agent\":{\"agentId\":\"agent:zao:research-001\",\"organismId\":\"organism:zao\"},\"artifacts\":{\"trapper\":{\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mediaType\":\"application/vnd.warper-keeper.trapper+zip\"}},\"authority\":{\"productionDeploy\":false,\"publicPosting\":false,\"rawBusAccess\":false,\"realTrading\":false,\"secretAccess\":false,\"walletAccess\":false},\"canaryId\":\"canary:zao:conformance-001\",\"control\":{\"halted\":false,\"humanApprovalRequired\":false,\"receiptColor\":\"GREEN\"},\"mode\":\"PAPER_ONLY\",\"schemaVersion\":\"federation-canary.v1\",\"stage\":\"TRAPPER_ACCEPTED\"},\"policyRef\":\"policy:federation-canary-v1\",\"privacyClass\":\"INTERNAL\",\"schema\":\"https://schemas.dreamnet.ink/spore/federation-canary.v1.json\",\"specVersion\":\"spore-envelope.v1\",\"subject\":\"canary:zao:conformance-001\"}",
+  "envelope": {
+    "specVersion": "spore-envelope.v1",
+    "kind": "RESULT",
+    "issuer": {
+      "id": "organism:zao",
+      "keyId": "test-key:rfc8032-1"
+    },
+    "subject": "canary:zao:conformance-001",
+    "issuedAt": "2026-08-01T12:00:00.000Z",
+    "expiresAt": "2026-08-01T13:00:00.000Z",
+    "nonce": "zao-canary-conformance-0001",
+    "audience": ["gateway:dreamnet"],
+    "schema": "https://schemas.dreamnet.ink/spore/federation-canary.v1.json",
+    "payload": {
+      "schemaVersion": "federation-canary.v1",
+      "canaryId": "canary:zao:conformance-001",
+      "agent": {
+        "organismId": "organism:zao",
+        "agentId": "agent:zao:research-001"
+      },
+      "stage": "TRAPPER_ACCEPTED",
+      "mode": "PAPER_ONLY",
+      "artifacts": {
+        "trapper": {
+          "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "mediaType": "application/vnd.warper-keeper.trapper+zip"
+        }
+      },
+      "control": {
+        "receiptColor": "GREEN",
+        "humanApprovalRequired": false,
+        "halted": false
+      },
+      "authority": {
+        "walletAccess": false,
+        "realTrading": false,
+        "publicPosting": false,
+        "productionDeploy": false,
+        "rawBusAccess": false,
+        "secretAccess": false
+      }
+    },
+    "privacyClass": "INTERNAL",
+    "policyRef": "policy:federation-canary-v1",
+    "id": "spore:result:sha256:c8245a69047a4cba79de74a40f5e236ff7d0052df4989f09578f35371c749a7f",
+    "hash": {
+      "algorithm": "sha256:rfc8785",
+      "digest": "c8245a69047a4cba79de74a40f5e236ff7d0052df4989f09578f35371c749a7f"
+    },
+    "signature": {
+      "algorithm": "Ed25519",
+      "keyId": "test-key:rfc8032-1",
+      "value": "ZwHkbnFWby5zZCd4hyK4LY5M8A4DPZelx-jnY90UVHzmui1R3DqNauqQn-CAU1e3MWNMQFqnstXqdcan8PI1Dw"
+    }
+  },
+  "cloudEvent": {
+    "specversion": "1.0",
+    "id": "spore:result:sha256:c8245a69047a4cba79de74a40f5e236ff7d0052df4989f09578f35371c749a7f",
+    "source": "organism:zao",
+    "type": "ink.dreamnet.spore.result.v1",
+    "datacontenttype": "application/vnd.dreamnet.spore-envelope.v1+json",
+    "dataschema": "https://schemas.dreamnet.ink/spore/spore-envelope.v1.json",
+    "time": "2026-08-01T12:00:00.000Z",
+    "subject": "canary:zao:conformance-001",
+    "sporekind": "RESULT"
+  },
+  "negativeVectors": [
+    {
+      "name": "signed-payload-tamper",
+      "mutation": "payload.control.halted=true",
+      "expectedDisposition": "REJECT"
+    },
+    {
+      "name": "cloud-event-source-tamper",
+      "mutation": "cloudEvent.source=organism:attacker",
+      "expectedDisposition": "REJECT"
+    },
+    {
+      "name": "wrong-audience",
+      "mutation": "expectedAudience=gateway:attacker",
+      "expectedDisposition": "REJECT"
+    }
+  ]
+}
