@@ -12,6 +12,7 @@ const POLICY_KEYS = new Set([
   'publishTag',
   'forbidLatest',
   'requiredNodeMajor',
+  'requiredBuildNewLine',
   'requiredLicense',
   'requiredAncestorCommits',
   'rollbackGitRef',
@@ -70,6 +71,7 @@ function isForbiddenTrackedFile(file) {
 
 export function evaluateReleaseCandidate({
   packageJson,
+  buildConfig,
   policy,
   nodeMajor,
   trackedFiles,
@@ -125,6 +127,13 @@ export function evaluateReleaseCandidate({
     'node_runtime',
     Number.isInteger(nodeMajor) && nodeMajor >= policy?.requiredNodeMajor,
     'Node runtime must meet the minimum production release version.',
+  );
+  addCheck(
+    checks,
+    'deterministic_newlines',
+    policy?.requiredBuildNewLine === 'lf' &&
+      buildConfig?.compilerOptions?.newLine === policy.requiredBuildNewLine,
+    'Tracked build output must use LF on every operating system.',
   );
   addCheck(
     checks,
@@ -271,6 +280,7 @@ function commandCheck(id, label, command, args, root) {
 
 export function createReleaseGateReceipt({
   packageJson,
+  buildConfig,
   policy,
   pnpmLock,
   git,
@@ -290,6 +300,7 @@ export function createReleaseGateReceipt({
     },
     inputs: {
       packageJson: digest(packageJson),
+      buildConfig: digest(buildConfig),
       releasePolicy: digest(policy),
       pnpmLock: `sha256:${createHash('sha256').update(pnpmLock).digest('hex')}`,
       packedFileManifest: digest(pack.files),
@@ -329,6 +340,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
   const outputPath = parseOutputArgument(process.argv.slice(2));
   try {
     const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
+    const buildConfig = JSON.parse(readFileSync(path.join(root, 'tsconfig.build.json'), 'utf8'));
     const policy = JSON.parse(readFileSync(path.join(root, 'release', 'spore-release-policy.json'), 'utf8'));
     const pnpmLock = readFileSync(path.join(root, 'pnpm-lock.yaml'), 'utf8');
     const pnpmCli = resolvePnpmCli();
@@ -395,6 +407,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     const trackedFiles = gitOutput(root, ['ls-files']).split(/\r?\n/).filter(Boolean);
     const evaluation = evaluateReleaseCandidate({
       packageJson,
+      buildConfig,
       policy,
       nodeMajor: Number.parseInt(process.versions.node.split('.')[0], 10),
       trackedFiles,
@@ -404,6 +417,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     });
     const receipt = createReleaseGateReceipt({
       packageJson,
+      buildConfig,
       policy,
       pnpmLock,
       git,

@@ -8,7 +8,8 @@ The repository is still explicit about non-production transport adapters, so a
 unless the package version and `next` dist-tag match policy, all five approved
 Spore commits are ancestors, the rollback commit resolves, the worktree is
 clean, typecheck/tests/build/audit pass, and the dry-run tarball contains only
-allowed distributable files. It emits an unsigned content-addressed receipt
+allowed distributable files. TypeScript output is pinned to LF so the same
+build stays clean on Windows and Linux. It emits an unsigned content-addressed receipt
 with zero merge or publish authority.
 
 ## Review quorum

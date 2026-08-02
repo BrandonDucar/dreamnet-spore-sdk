@@ -29,6 +29,11 @@ function fixture() {
       prepack: 'npm run build',
     },
   };
+  const buildConfig = {
+    compilerOptions: {
+      newLine: 'lf',
+    },
+  };
   const policy = {
     schemaVersion: 'dreamnet.spore-release-policy.v1',
     packageName: '@dreamnet/spore-sdk',
@@ -37,6 +42,7 @@ function fixture() {
     publishTag: 'next',
     forbidLatest: true,
     requiredNodeMajor: 20,
+    requiredBuildNewLine: 'lf',
     requiredLicense: 'Apache-2.0',
     requiredAncestorCommits: ancestors,
     rollbackGitRef: ancestors.at(-1),
@@ -62,6 +68,7 @@ function fixture() {
   };
   return {
     packageJson,
+    buildConfig,
     policy,
     nodeMajor: 20,
     trackedFiles: ['package.json', 'src/index.ts'],
@@ -113,11 +120,23 @@ test('rejects dirty trees, tracked secrets, forbidden pack paths, and failed com
   }
 });
 
+test('rejects platform-dependent TypeScript build newlines', () => {
+  const input = fixture();
+  input.buildConfig.compilerOptions.newLine = 'crlf';
+  const result = evaluateReleaseCandidate(input);
+
+  assert.equal(result.status, 'RED');
+  assert.ok(result.checks.some(
+    (check) => check.id === 'deterministic_newlines' && check.passed === false,
+  ));
+});
+
 test('emits a content-addressed receipt with zero publish authority', () => {
   const input = fixture();
   const decision = evaluateReleaseCandidate(input);
   const receipt = createReleaseGateReceipt({
     packageJson: input.packageJson,
+    buildConfig: input.buildConfig,
     policy: input.policy,
     pnpmLock: 'lockfileVersion: 9',
     git: input.git,
