@@ -12,6 +12,7 @@ const ancestors = [
   '5b1cd56f89e2cc1dcde8166e53fb3ccd6d9e90e4',
   '4619616d48a5f1180e88812bf6771cb47c9c56cd',
   '82d987f1ed94c5746f7dc6123c3389d0482df85c',
+  'ae74c15107850f902312a5b5fdd1d459a231587c',
 ];
 const requiredGitAttributes = [
   '* text=auto',
