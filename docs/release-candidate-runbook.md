@@ -2,6 +2,7 @@
 
 The release-candidate line began at `0.2.0-rc.1`, not `1.0.0-rc1`.
 Builder Profile v1 advances the stacked candidate to `0.2.0-rc.2`.
+The receiving-side Builder Profile quorum gate advances it to `0.2.0-rc.3`.
 The repository is still explicit about non-production transport adapters, so a
 1.0 stability promise would overstate the implementation boundary.
 

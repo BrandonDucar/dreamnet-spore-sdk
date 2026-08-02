@@ -4,7 +4,7 @@ Portable contracts and runtime adapters for exchanging observations, assignments
 
 Spore is the interoperability layer. It lets another runtime participate in DreamNet without sharing DreamNet's database, deployment topology, or model provider.
 
-> Status: release candidate (`0.2.0-rc.2`). Interfaces remain prerelease until
+> Status: release candidate (`0.2.0-rc.3`). Interfaces remain prerelease until
 > the conformance and operator-review gates are accepted.
 
 ## What It Provides
@@ -14,6 +14,8 @@ Spore is the interoperability layer. It lets another runtime participate in Drea
 - signed `SporeEnvelope`, `ProofDrop`, and fail-closed `SporeLease` contracts
 - signed, evidence-backed Builder Profiles with a three-reviewer threshold and
   zero execution authority
+- receiving-side Builder Profile admission that resolves the signed candidate
+  and every attributed review receipt before recognizing quorum
 - key resolution, schema policy, replay classification, and revocation hooks
 - CloudEvents 1.0 transport mapping without redefining the signed envelope
 - a paper-only federation canary state machine spanning Trappers, Proof Drops,
@@ -99,6 +101,8 @@ See [Federation Conformance](./docs/federation-conformance.md) for the fixed
 cross-language Ed25519 fixture and required acceptance and rejection results.
 See [Builder Profile v1](./docs/builder-profile-v1.md) for portable judgment,
 privacy, evidence, quorum, and authority boundaries.
+See [Builder Profile trust gate](./docs/builder-profile-trust-gate-v1.md) for
+candidate, review-receipt, and receiving-organism verification.
 
 ## Portable Contracts
 

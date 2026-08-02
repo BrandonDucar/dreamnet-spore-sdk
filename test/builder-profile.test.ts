@@ -12,6 +12,7 @@ import { createCoreSchemaRegistry } from '../src/protocol/trust.js';
 
 const keys = generateKeyPairSync('ed25519');
 const issuedAt = '2026-08-02T12:00:00.000Z';
+const candidateEnvelopeId = `spore:profile:sha256:${'9'.repeat(64)}`;
 
 function reviewedPayload(): BuilderProfilePayload {
   return {
@@ -53,6 +54,7 @@ function reviewedPayload(): BuilderProfilePayload {
     ],
     quorum: {
       requiredReviewers: 3,
+      candidateEnvelopeId,
       reviews: ['codex', 'hermes', 'antigravity'].map((reviewerId, index) => ({
         reviewerId: `agent:${reviewerId}`,
         receiptId: `spore:receipt:sha256:${String.fromCharCode(99 + index).repeat(64)}`,
@@ -80,6 +82,7 @@ test('creates a signed, evidence-backed, quorum-reviewed profile envelope', () =
       expiresAt: '2026-08-09T12:00:00.000Z',
       nonce: 'builder-profile-brandon-0001',
       payload,
+      parents: [candidateEnvelopeId],
       policyRef: 'policy:builder-profile:quorum-v1',
     },
     keys.privateKey,
@@ -115,6 +118,7 @@ test('profile decisions remain advisory and signed-field mutation is rejected', 
       expiresAt: '2026-08-09T12:00:00.000Z',
       nonce: 'builder-profile-brandon-0002',
       payload,
+      parents: [candidateEnvelopeId],
       policyRef: 'policy:builder-profile:quorum-v1',
     },
     keys.privateKey,
@@ -185,14 +189,15 @@ test('candidate profiles cannot claim reviews and revisions require lineage', ()
       expiresAt: '2026-08-09T12:00:00.000Z',
       nonce: 'builder-profile-brandon-revision-0002',
       payload: revision,
-      parents: [revision.supersedes],
+      parents: [candidateEnvelopeId, revision.supersedes],
       policyRef: 'policy:builder-profile:quorum-v1',
     },
     keys.privateKey,
   );
-  assert.deepEqual(revisionEnvelope.parents, [revision.supersedes]);
+  assert.deepEqual(revisionEnvelope.parents, [candidateEnvelopeId, revision.supersedes]);
 
   candidate.quorum.reviews = [];
+  delete candidate.quorum.candidateEnvelopeId;
   delete candidate.quorum.reviewedAt;
   assert.doesNotThrow(() => assertBuilderProfilePayload(candidate));
 });
@@ -214,6 +219,26 @@ test('requires the envelope subject to identify the profiled builder', () => {
       keys.privateKey,
     ),
     /subject must equal/,
+  );
+});
+
+test('requires a reviewed profile to parent the exact candidate envelope', () => {
+  const payload = reviewedPayload();
+  assert.throws(
+    () => createBuilderProfileEnvelope(
+      {
+        issuer: { id: 'operator:dreamnet', keyId: 'key:operator:1' },
+        subject: payload.builderId,
+        audience: ['organism:dreamnet'],
+        issuedAt,
+        expiresAt: '2026-08-09T12:00:00.000Z',
+        nonce: 'builder-profile-missing-candidate-parent-0001',
+        payload,
+        policyRef: 'policy:builder-profile:quorum-v1',
+      },
+      keys.privateKey,
+    ),
+    /candidate envelope in parents/,
   );
 });
 
@@ -256,6 +281,7 @@ test('rejects duplicate reviewer identities, duplicate receipts, and future revi
         expiresAt: '2026-08-09T12:00:00.000Z',
         nonce: 'builder-profile-future-review-0001',
         payload: future,
+        parents: [candidateEnvelopeId],
         policyRef: 'policy:builder-profile:quorum-v1',
       },
       keys.privateKey,

@@ -1,5 +1,7 @@
 import { createSignedEnvelope, } from './envelope.js';
+import { sha256DomainSeparatedJson } from './canonicalize.js';
 export const BUILDER_PROFILE_SCHEMA = 'https://schemas.dreamnet.ink/spore/builder-profile.v1.json';
+export const BUILDER_PROFILE_CONTENT_HASH_DOMAIN = 'SPORE-BUILDER-PROFILE-CONTENT-V1';
 const PAYLOAD_KEYS = new Set([
     'schemaVersion', 'profileId', 'builderId', 'builderHandle', 'revision',
     'supersedes', 'status', 'visibility', 'preferences', 'principles', 'quorum',
@@ -14,7 +16,7 @@ const PRINCIPLE_KEYS = new Set([
 ]);
 const REFERENCE_KEYS = new Set(['digest', 'mediaType', 'sizeBytes', 'uri']);
 const QUORUM_KEYS = new Set([
-    'requiredReviewers', 'reviews', 'reviewedAt',
+    'requiredReviewers', 'candidateEnvelopeId', 'reviews', 'reviewedAt',
 ]);
 const REVIEW_KEYS = new Set(['reviewerId', 'receiptId', 'verdict']);
 const AUTHORITY_KEYS = new Set([
@@ -134,6 +136,10 @@ export function assertBuilderProfilePayload(payload) {
         payload.quorum.requiredReviewers < 3 || payload.quorum.requiredReviewers > 10) {
         throw new TypeError('quorum.requiredReviewers must be an integer from 3 to 10.');
     }
+    if (payload.quorum.candidateEnvelopeId !== undefined &&
+        !/^spore:profile:sha256:[a-f0-9]{64}$/.test(payload.quorum.candidateEnvelopeId)) {
+        throw new TypeError('quorum.candidateEnvelopeId must be a complete profile envelope ID.');
+    }
     if (!Array.isArray(payload.quorum.reviews) || payload.quorum.reviews.length > 10) {
         throw new TypeError('quorum.reviews must contain 0 to 10 entries.');
     }
@@ -156,13 +162,18 @@ export function assertBuilderProfilePayload(payload) {
         throw new TypeError('quorum.reviews must reference unique receipts.');
     }
     if (payload.status === 'REVIEWED') {
+        if (payload.quorum.candidateEnvelopeId === undefined) {
+            throw new TypeError('Reviewed profiles must reference the candidate envelope reviewed by quorum.');
+        }
         if (payload.quorum.reviews.length < payload.quorum.requiredReviewers) {
             throw new TypeError('Reviewed profiles require the configured reviewer quorum.');
         }
         assertTimestamp(payload.quorum.reviewedAt, 'quorum.reviewedAt');
     }
-    else if (payload.quorum.reviews.length > 0 || payload.quorum.reviewedAt !== undefined) {
-        throw new TypeError('Candidate profiles cannot claim reviews or a review time.');
+    else if (payload.quorum.candidateEnvelopeId !== undefined ||
+        payload.quorum.reviews.length > 0 ||
+        payload.quorum.reviewedAt !== undefined) {
+        throw new TypeError('Candidate profiles cannot claim a reviewed candidate, reviews, or a review time.');
     }
     assertExactKeys(payload.authority, AUTHORITY_KEYS, 'authority');
     if (payload.authority.advisoryOnly !== true ||
@@ -171,6 +182,22 @@ export function assertBuilderProfilePayload(payload) {
         payload.authority.authorizesExecution !== false) {
         throw new TypeError('Builder Profiles are advisory and cannot grant capabilities, override policy, or authorize execution.');
     }
+}
+export function computeBuilderProfileContentDigest(payload) {
+    assertBuilderProfilePayload(payload);
+    const reviewableContent = {
+        schemaVersion: payload.schemaVersion,
+        profileId: payload.profileId,
+        builderId: payload.builderId,
+        ...(payload.builderHandle !== undefined ? { builderHandle: payload.builderHandle } : {}),
+        revision: payload.revision,
+        ...(payload.supersedes !== undefined ? { supersedes: payload.supersedes } : {}),
+        visibility: payload.visibility,
+        preferences: payload.preferences,
+        principles: payload.principles,
+        authority: payload.authority,
+    };
+    return `sha256:${sha256DomainSeparatedJson(BUILDER_PROFILE_CONTENT_HASH_DOMAIN, reviewableContent)}`;
 }
 export function createBuilderProfileEnvelope(options, privateKey) {
     assertBuilderProfilePayload(options.payload);
@@ -184,6 +211,10 @@ export function createBuilderProfileEnvelope(options, privateKey) {
     if (options.payload.supersedes !== undefined &&
         !options.parents?.includes(options.payload.supersedes)) {
         throw new TypeError('A revised Builder Profile must include its superseded profile in envelope parents.');
+    }
+    if (options.payload.quorum.candidateEnvelopeId !== undefined &&
+        !options.parents?.includes(options.payload.quorum.candidateEnvelopeId)) {
+        throw new TypeError('A reviewed Builder Profile must include its candidate envelope in parents.');
     }
     const unsigned = {
         specVersion: 'spore-envelope.v1',

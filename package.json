@@ -1,6 +1,6 @@
 {
   "name": "@dreamnet/spore-sdk",
-  "version": "0.2.0-rc.2",
+  "version": "0.2.0-rc.3",
   "description": "Prerelease interoperability contracts and Spore node runtime for DreamNet",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -34,7 +34,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
-    "test": "tsx --test test/protocol-v1.test.ts test/verification-boundary.test.ts test/monorepo-compat.test.ts test/federation-canary.test.ts test/federation-conformance.test.ts test/builder-profile.test.ts test/release-preflight.test.mjs",
+    "test": "tsx --test test/protocol-v1.test.ts test/verification-boundary.test.ts test/monorepo-compat.test.ts test/federation-canary.test.ts test/federation-conformance.test.ts test/builder-profile.test.ts test/builder-profile-trust.test.ts test/release-preflight.test.mjs",
     "test:examples": "tsx examples/test-spore-interop.ts",
     "release:preflight": "node scripts/release-preflight.mjs",
     "prepack": "npm run build"

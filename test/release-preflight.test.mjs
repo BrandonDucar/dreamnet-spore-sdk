@@ -13,6 +13,7 @@ const ancestors = [
   '4619616d48a5f1180e88812bf6771cb47c9c56cd',
   '82d987f1ed94c5746f7dc6123c3389d0482df85c',
   'ae74c15107850f902312a5b5fdd1d459a231587c',
+  'de31f5ff9690eac6ab6c4d37adb526ce0554da8f',
 ];
 const requiredGitAttributes = [
   '* text=auto',
@@ -33,7 +34,7 @@ const rollbackCommit = '4619616d48a5f1180e88812bf6771cb47c9c56cd';
 function fixture() {
   const packageJson = {
     name: '@dreamnet/spore-sdk',
-    version: '0.2.0-rc.2',
+    version: '0.2.0-rc.3',
     license: 'Apache-2.0',
     repository: {
       type: 'git',
@@ -56,7 +57,7 @@ function fixture() {
     schemaVersion: 'dreamnet.spore-release-policy.v1',
     packageName: '@dreamnet/spore-sdk',
     repositoryUrl: 'https://github.com/BrandonDucar/dreamnet-spore-sdk.git',
-    candidateVersion: '0.2.0-rc.2',
+    candidateVersion: '0.2.0-rc.3',
     publishTag: 'next',
     forbidLatest: true,
     requiredNodeMajor: 20,
@@ -173,7 +174,7 @@ test('emits a content-addressed receipt with zero publish authority', () => {
     pnpmLock: 'lockfileVersion: 9',
     git: input.git,
     pack: {
-      filename: 'dreamnet-spore-sdk-0.2.0-rc.2.tgz',
+      filename: 'dreamnet-spore-sdk-0.2.0-rc.3.tgz',
       files: input.packedFiles,
       unpackedSize: 1000,
       shasum: 'b'.repeat(40),
