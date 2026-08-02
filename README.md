@@ -4,7 +4,8 @@ Portable contracts and runtime adapters for exchanging observations, assignments
 
 Spore is the interoperability layer. It lets another runtime participate in DreamNet without sharing DreamNet's database, deployment topology, or model provider.
 
-> Status: early technical preview (`0.2.0-alpha.1`). Interfaces may evolve before a stable release.
+> Status: release candidate (`0.2.0-rc.1`). Interfaces remain prerelease until
+> the conformance and operator-review gates are accepted.
 
 ## What It Provides
 
@@ -121,13 +122,16 @@ of durable delivery or settlement.
 
 ## Roadmap
 
-- publish the package to npm
 - replace remaining legacy `Record<string, any>` boundaries with runtime schemas
-- add issuer key resolution, revocation and replay stores
-- add durable deduplication
+- add durable production implementations for issuer keys, replay, revocation,
+  and deduplication
 - add NATS and Cloudflare Queue transports
-- add conformance fixtures and compatibility tests
-- publish a stable protocol versioning policy
+- add independent cross-language conformance implementations
+- configure npm trusted publishing and provenance after release quorum approval
+
+Release candidates are evaluated by the executable fail-closed gate documented
+in [the release-candidate runbook](./docs/release-candidate-runbook.md). The
+gate authorizes neither merge nor publish and forbids the `latest` dist-tag.
 
 ## Related Projects
 

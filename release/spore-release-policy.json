@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "dreamnet.spore-release-policy.v1",
+  "packageName": "@dreamnet/spore-sdk",
+  "candidateVersion": "0.2.0-rc.1",
+  "publishTag": "next",
+  "forbidLatest": true,
+  "requiredNodeMajor": 20,
+  "requiredLicense": "Apache-2.0",
+  "requiredAncestorCommits": [
+    "558a4e48dc9e125240c91c012213950e97c1768e",
+    "bdf96fba9a4ce006b61b1884713f7f450809da23",
+    "bb5d79a114872e6d5649be2744a9e29efbe7b9c4",
+    "5b1cd56f89e2cc1dcde8166e53fb3ccd6d9e90e4",
+    "4619616d48a5f1180e88812bf6771cb47c9c56cd"
+  ],
+  "rollbackGitRef": "4619616d48a5f1180e88812bf6771cb47c9c56cd",
+  "requiredPackageScripts": ["typecheck", "test", "build", "prepack"],
+  "requiredPackedFiles": ["package.json", "README.md", "LICENSE", "NOTICE"],
+  "allowedPackedPathPrefixes": ["dist/"],
+  "forbiddenPackedPathPrefixes": [
+    ".env",
+    ".github/",
+    "docs/",
+    "examples/",
+    "release/",
+    "scripts/",
+    "src/",
+    "test/"
+  ],
+  "maxPackedFileCount": 250
+}
