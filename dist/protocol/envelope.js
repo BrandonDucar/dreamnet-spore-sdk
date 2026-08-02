@@ -5,7 +5,7 @@ export const SPORE_HASH_ALGORITHM = 'sha256:rfc8785';
 const SPORE_KINDS = new Set([
     'OBSERVATION', 'ASSIGNMENT', 'RESULT', 'PROOF_DROP', 'RECEIPT', 'CLAIM',
     'COUNTERCLAIM', 'VERIFICATION', 'CAPABILITY', 'MUTATION', 'LEASE',
-    'REVOCATION', 'POLICY', 'SETTLEMENT',
+    'REVOCATION', 'POLICY', 'PROFILE', 'SETTLEMENT',
 ]);
 function assertUniqueStringArray(value, name, requireValue = false) {
     if (!Array.isArray(value) || (requireValue && value.length === 0)) {

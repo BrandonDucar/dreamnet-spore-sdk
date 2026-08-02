@@ -8,6 +8,7 @@ import {
 import { assertProofDropPayload } from './proofDrop.js';
 import { assertSporeLeasePayload } from './lease.js';
 import { assertFederationCanaryPayload, FEDERATION_CANARY_SCHEMA } from './federationCanary.js';
+import { assertBuilderProfilePayload, BUILDER_PROFILE_SCHEMA } from './builderProfile.js';
 
 export interface IssuerKeyRecord {
   issuerId: string;
@@ -75,6 +76,9 @@ export function createCoreSchemaRegistry(): SchemaRegistry {
     })
     .register(FEDERATION_CANARY_SCHEMA, (payload) => {
       assertFederationCanaryPayload(payload as Parameters<typeof assertFederationCanaryPayload>[0]);
+    })
+    .register(BUILDER_PROFILE_SCHEMA, (payload) => {
+      assertBuilderProfilePayload(payload as Parameters<typeof assertBuilderProfilePayload>[0]);
     });
 }
 
