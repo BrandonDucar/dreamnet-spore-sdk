@@ -13,6 +13,7 @@ const POLICY_KEYS = new Set([
   'forbidLatest',
   'requiredNodeMajor',
   'requiredBuildNewLine',
+  'requiredGitAttributes',
   'requiredLicense',
   'requiredAncestorCommits',
   'rollbackGitRef',
@@ -72,6 +73,7 @@ function isForbiddenTrackedFile(file) {
 export function evaluateReleaseCandidate({
   packageJson,
   buildConfig,
+  gitAttributes,
   policy,
   nodeMajor,
   trackedFiles,
@@ -134,6 +136,18 @@ export function evaluateReleaseCandidate({
     policy?.requiredBuildNewLine === 'lf' &&
       buildConfig?.compilerOptions?.newLine === policy.requiredBuildNewLine,
     'Tracked build output must use LF on every operating system.',
+  );
+  const attributeLines = new Set(
+    typeof gitAttributes === 'string'
+      ? gitAttributes.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+      : [],
+  );
+  addCheck(
+    checks,
+    'git_attributes',
+    uniqueStrings(policy?.requiredGitAttributes) &&
+      policy.requiredGitAttributes.every((line) => attributeLines.has(line)),
+    'Repository attributes must pin every policy-required text pattern to LF.',
   );
   addCheck(
     checks,
@@ -281,6 +295,7 @@ function commandCheck(id, label, command, args, root) {
 export function createReleaseGateReceipt({
   packageJson,
   buildConfig,
+  gitAttributes,
   policy,
   pnpmLock,
   git,
@@ -301,6 +316,7 @@ export function createReleaseGateReceipt({
     inputs: {
       packageJson: digest(packageJson),
       buildConfig: digest(buildConfig),
+      gitAttributes: `sha256:${createHash('sha256').update(gitAttributes).digest('hex')}`,
       releasePolicy: digest(policy),
       pnpmLock: `sha256:${createHash('sha256').update(pnpmLock).digest('hex')}`,
       packedFileManifest: digest(pack.files),
@@ -341,6 +357,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
   try {
     const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
     const buildConfig = JSON.parse(readFileSync(path.join(root, 'tsconfig.build.json'), 'utf8'));
+    const gitAttributes = readFileSync(path.join(root, '.gitattributes'), 'utf8');
     const policy = JSON.parse(readFileSync(path.join(root, 'release', 'spore-release-policy.json'), 'utf8'));
     const pnpmLock = readFileSync(path.join(root, 'pnpm-lock.yaml'), 'utf8');
     const pnpmCli = resolvePnpmCli();
@@ -408,6 +425,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     const evaluation = evaluateReleaseCandidate({
       packageJson,
       buildConfig,
+      gitAttributes,
       policy,
       nodeMajor: Number.parseInt(process.versions.node.split('.')[0], 10),
       trackedFiles,
@@ -418,6 +436,7 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     const receipt = createReleaseGateReceipt({
       packageJson,
       buildConfig,
+      gitAttributes,
       policy,
       pnpmLock,
       git,

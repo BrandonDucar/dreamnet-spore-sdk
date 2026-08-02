@@ -7,6 +7,20 @@
   "forbidLatest": true,
   "requiredNodeMajor": 20,
   "requiredBuildNewLine": "lf",
+  "requiredGitAttributes": [
+    "* text=auto",
+    "*.cjs text eol=lf",
+    "*.cts text eol=lf",
+    "*.js text eol=lf",
+    "*.json text eol=lf",
+    "*.md text eol=lf",
+    "*.mjs text eol=lf",
+    "*.mts text eol=lf",
+    "*.ts text eol=lf",
+    "*.tsx text eol=lf",
+    "*.yaml text eol=lf",
+    "*.yml text eol=lf"
+  ],
   "requiredLicense": "Apache-2.0",
   "requiredAncestorCommits": [
     "558a4e48dc9e125240c91c012213950e97c1768e",

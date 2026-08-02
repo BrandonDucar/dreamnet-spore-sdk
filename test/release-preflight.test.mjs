@@ -12,6 +12,20 @@ const ancestors = [
   '5b1cd56f89e2cc1dcde8166e53fb3ccd6d9e90e4',
   '4619616d48a5f1180e88812bf6771cb47c9c56cd',
 ];
+const requiredGitAttributes = [
+  '* text=auto',
+  '*.cjs text eol=lf',
+  '*.cts text eol=lf',
+  '*.js text eol=lf',
+  '*.json text eol=lf',
+  '*.md text eol=lf',
+  '*.mjs text eol=lf',
+  '*.mts text eol=lf',
+  '*.ts text eol=lf',
+  '*.tsx text eol=lf',
+  '*.yaml text eol=lf',
+  '*.yml text eol=lf',
+];
 
 function fixture() {
   const packageJson = {
@@ -34,6 +48,7 @@ function fixture() {
       newLine: 'lf',
     },
   };
+  const gitAttributes = `${requiredGitAttributes.join('\n')}\n`;
   const policy = {
     schemaVersion: 'dreamnet.spore-release-policy.v1',
     packageName: '@dreamnet/spore-sdk',
@@ -43,6 +58,7 @@ function fixture() {
     forbidLatest: true,
     requiredNodeMajor: 20,
     requiredBuildNewLine: 'lf',
+    requiredGitAttributes,
     requiredLicense: 'Apache-2.0',
     requiredAncestorCommits: ancestors,
     rollbackGitRef: ancestors.at(-1),
@@ -69,6 +85,7 @@ function fixture() {
   return {
     packageJson,
     buildConfig,
+    gitAttributes,
     policy,
     nodeMajor: 20,
     trackedFiles: ['package.json', 'src/index.ts'],
@@ -131,12 +148,24 @@ test('rejects platform-dependent TypeScript build newlines', () => {
   ));
 });
 
+test('rejects missing repository line-ending attributes', () => {
+  const input = fixture();
+  input.gitAttributes = '* text=auto\n*.ts text eol=lf\n';
+  const result = evaluateReleaseCandidate(input);
+
+  assert.equal(result.status, 'RED');
+  assert.ok(result.checks.some(
+    (check) => check.id === 'git_attributes' && check.passed === false,
+  ));
+});
+
 test('emits a content-addressed receipt with zero publish authority', () => {
   const input = fixture();
   const decision = evaluateReleaseCandidate(input);
   const receipt = createReleaseGateReceipt({
     packageJson: input.packageJson,
     buildConfig: input.buildConfig,
+    gitAttributes: input.gitAttributes,
     policy: input.policy,
     pnpmLock: 'lockfileVersion: 9',
     git: input.git,
