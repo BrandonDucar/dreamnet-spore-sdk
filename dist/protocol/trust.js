@@ -3,6 +3,7 @@ import { assertProofDropPayload } from './proofDrop.js';
 import { assertSporeLeasePayload } from './lease.js';
 import { assertFederationCanaryPayload, FEDERATION_CANARY_SCHEMA } from './federationCanary.js';
 import { assertBuilderProfilePayload, BUILDER_PROFILE_SCHEMA } from './builderProfile.js';
+import { assertBuilderProfileReviewPayload, BUILDER_PROFILE_REVIEW_SCHEMA, } from './builderProfileReview.js';
 export class SchemaRegistry {
     validators = new Map();
     register(schema, validator) {
@@ -41,6 +42,9 @@ export function createCoreSchemaRegistry() {
     })
         .register(BUILDER_PROFILE_SCHEMA, (payload) => {
         assertBuilderProfilePayload(payload);
+    })
+        .register(BUILDER_PROFILE_REVIEW_SCHEMA, (payload) => {
+        assertBuilderProfileReviewPayload(payload);
     });
 }
 function parseOptionalTimestamp(value) {

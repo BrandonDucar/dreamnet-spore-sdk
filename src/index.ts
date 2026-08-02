@@ -19,4 +19,5 @@ export * from './protocol/cloudEvents.js';
 export * from './protocol/legacyMonorepo.js';
 export * from './protocol/federationCanary.js';
 export * from './protocol/builderProfile.js';
-
+export * from './protocol/builderProfileReview.js';
+export * from './protocol/builderProfileTrust.js';

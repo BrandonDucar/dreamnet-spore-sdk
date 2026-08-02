@@ -2,6 +2,7 @@ import { type KeyLike } from 'node:crypto';
 import { type SporeEnvelope, type SporeIssuer } from './envelope.js';
 import type { ContentReference } from './proofDrop.js';
 export declare const BUILDER_PROFILE_SCHEMA: "https://schemas.dreamnet.ink/spore/builder-profile.v1.json";
+export declare const BUILDER_PROFILE_CONTENT_HASH_DOMAIN: "SPORE-BUILDER-PROFILE-CONTENT-V1";
 export interface BuilderDecisionPrinciple {
     id: string;
     statement: string;
@@ -34,6 +35,7 @@ export interface BuilderProfilePayload {
     principles: BuilderDecisionPrinciple[];
     quorum: {
         requiredReviewers: number;
+        candidateEnvelopeId?: string;
         reviews: BuilderProfileReview[];
         reviewedAt?: string;
     };
@@ -56,4 +58,5 @@ export interface CreateBuilderProfileOptions {
     policyRef: string;
 }
 export declare function assertBuilderProfilePayload(payload: BuilderProfilePayload): void;
+export declare function computeBuilderProfileContentDigest(payload: BuilderProfilePayload): `sha256:${string}`;
 export declare function createBuilderProfileEnvelope(options: CreateBuilderProfileOptions, privateKey: KeyLike): SporeEnvelope<BuilderProfilePayload>;

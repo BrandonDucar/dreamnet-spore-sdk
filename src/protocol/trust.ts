@@ -9,6 +9,10 @@ import { assertProofDropPayload } from './proofDrop.js';
 import { assertSporeLeasePayload } from './lease.js';
 import { assertFederationCanaryPayload, FEDERATION_CANARY_SCHEMA } from './federationCanary.js';
 import { assertBuilderProfilePayload, BUILDER_PROFILE_SCHEMA } from './builderProfile.js';
+import {
+  assertBuilderProfileReviewPayload,
+  BUILDER_PROFILE_REVIEW_SCHEMA,
+} from './builderProfileReview.js';
 
 export interface IssuerKeyRecord {
   issuerId: string;
@@ -79,6 +83,9 @@ export function createCoreSchemaRegistry(): SchemaRegistry {
     })
     .register(BUILDER_PROFILE_SCHEMA, (payload) => {
       assertBuilderProfilePayload(payload as Parameters<typeof assertBuilderProfilePayload>[0]);
+    })
+    .register(BUILDER_PROFILE_REVIEW_SCHEMA, (payload) => {
+      assertBuilderProfileReviewPayload(payload as Parameters<typeof assertBuilderProfileReviewPayload>[0]);
     });
 }
 
