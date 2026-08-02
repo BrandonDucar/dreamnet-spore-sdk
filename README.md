@@ -92,6 +92,8 @@ See [Runtime Verification Boundary](./docs/runtime-verification-boundary.md)
 for NATS and Temporal adapter integration.
 See [Federation Canary v1](./docs/federation-canary-v1.md) for the bounded ZAO
 interoperability workflow and yellow/red receipt behavior.
+See [Federation Conformance](./docs/federation-conformance.md) for the fixed
+cross-language Ed25519 fixture and required acceptance and rejection results.
 
 ## Portable Contracts
 
