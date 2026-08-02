@@ -215,12 +215,14 @@ export function evaluateReleaseCandidate({
 }
 
 function run(command, args, cwd, { capture = false } = {}) {
-  const executable = process.platform === 'win32' && command === 'pnpm' ? 'pnpm.cmd' : command;
+  const usesWindowsShim = process.platform === 'win32' && (command === 'pnpm' || command === 'npm');
+  const executable = usesWindowsShim ? `${command}.cmd` : command;
   const result = spawnSync(executable, args, {
     cwd,
     encoding: 'utf8',
     stdio: capture ? 'pipe' : 'inherit',
     windowsHide: true,
+    shell: usesWindowsShim,
   });
   return {
     status: result.status,
