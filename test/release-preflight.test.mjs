@@ -11,6 +11,7 @@ const ancestors = [
   'bb5d79a114872e6d5649be2744a9e29efbe7b9c4',
   '5b1cd56f89e2cc1dcde8166e53fb3ccd6d9e90e4',
   '4619616d48a5f1180e88812bf6771cb47c9c56cd',
+  '82d987f1ed94c5746f7dc6123c3389d0482df85c',
 ];
 const requiredGitAttributes = [
   '* text=auto',
@@ -26,11 +27,12 @@ const requiredGitAttributes = [
   '*.yaml text eol=lf',
   '*.yml text eol=lf',
 ];
+const rollbackCommit = '4619616d48a5f1180e88812bf6771cb47c9c56cd';
 
 function fixture() {
   const packageJson = {
     name: '@dreamnet/spore-sdk',
-    version: '0.2.0-rc.1',
+    version: '0.2.0-rc.2',
     license: 'Apache-2.0',
     repository: {
       type: 'git',
@@ -53,7 +55,7 @@ function fixture() {
     schemaVersion: 'dreamnet.spore-release-policy.v1',
     packageName: '@dreamnet/spore-sdk',
     repositoryUrl: 'https://github.com/BrandonDucar/dreamnet-spore-sdk.git',
-    candidateVersion: '0.2.0-rc.1',
+    candidateVersion: '0.2.0-rc.2',
     publishTag: 'next',
     forbidLatest: true,
     requiredNodeMajor: 20,
@@ -61,7 +63,7 @@ function fixture() {
     requiredGitAttributes,
     requiredLicense: 'Apache-2.0',
     requiredAncestorCommits: ancestors,
-    rollbackGitRef: ancestors.at(-1),
+    rollbackGitRef: rollbackCommit,
     requiredPackageScripts: ['typecheck', 'test', 'build', 'prepack'],
     requiredPackedFiles: [
       'package.json',
@@ -80,7 +82,7 @@ function fixture() {
     branch: 'codex/spore-release-gate-v1',
     commit: 'a'.repeat(40),
     ancestors: Object.fromEntries(ancestors.map((commit) => [commit, true])),
-    rollbackRefCommit: ancestors.at(-1),
+    rollbackRefCommit: rollbackCommit,
   };
   return {
     packageJson,
@@ -170,7 +172,7 @@ test('emits a content-addressed receipt with zero publish authority', () => {
     pnpmLock: 'lockfileVersion: 9',
     git: input.git,
     pack: {
-      filename: 'dreamnet-spore-sdk-0.2.0-rc.1.tgz',
+      filename: 'dreamnet-spore-sdk-0.2.0-rc.2.tgz',
       files: input.packedFiles,
       unpackedSize: 1000,
       shasum: 'b'.repeat(40),

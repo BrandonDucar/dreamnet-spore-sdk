@@ -1,7 +1,7 @@
 import { type KeyLike } from 'node:crypto';
 export declare const SPORE_ENVELOPE_VERSION: "spore-envelope.v1";
 export declare const SPORE_HASH_ALGORITHM: "sha256:rfc8785";
-export type SporeEnvelopeKind = 'OBSERVATION' | 'ASSIGNMENT' | 'RESULT' | 'PROOF_DROP' | 'RECEIPT' | 'CLAIM' | 'COUNTERCLAIM' | 'VERIFICATION' | 'CAPABILITY' | 'MUTATION' | 'LEASE' | 'REVOCATION' | 'POLICY' | 'SETTLEMENT';
+export type SporeEnvelopeKind = 'OBSERVATION' | 'ASSIGNMENT' | 'RESULT' | 'PROOF_DROP' | 'RECEIPT' | 'CLAIM' | 'COUNTERCLAIM' | 'VERIFICATION' | 'CAPABILITY' | 'MUTATION' | 'LEASE' | 'REVOCATION' | 'POLICY' | 'PROFILE' | 'SETTLEMENT';
 export interface SporeIssuer {
     id: string;
     keyId: string;

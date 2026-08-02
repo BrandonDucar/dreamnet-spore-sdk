@@ -1,6 +1,7 @@
 # Spore SDK release-candidate runbook
 
-The first defensible release candidate is `0.2.0-rc.1`, not `1.0.0-rc1`.
+The release-candidate line began at `0.2.0-rc.1`, not `1.0.0-rc1`.
+Builder Profile v1 advances the stacked candidate to `0.2.0-rc.2`.
 The repository is still explicit about non-production transport adapters, so a
 1.0 stability promise would overstate the implementation boundary.
 

@@ -4,7 +4,7 @@ Portable contracts and runtime adapters for exchanging observations, assignments
 
 Spore is the interoperability layer. It lets another runtime participate in DreamNet without sharing DreamNet's database, deployment topology, or model provider.
 
-> Status: release candidate (`0.2.0-rc.1`). Interfaces remain prerelease until
+> Status: release candidate (`0.2.0-rc.2`). Interfaces remain prerelease until
 > the conformance and operator-review gates are accepted.
 
 ## What It Provides
@@ -12,6 +12,8 @@ Spore is the interoperability layer. It lets another runtime participate in Drea
 - typed portable contracts for observations, assignments, capabilities, results, claims, receipts, and verification
 - RFC 8785 canonicalization, domain-separated content IDs, and Ed25519 signatures
 - signed `SporeEnvelope`, `ProofDrop`, and fail-closed `SporeLease` contracts
+- signed, evidence-backed Builder Profiles with a three-reviewer threshold and
+  zero execution authority
 - key resolution, schema policy, replay classification, and revocation hooks
 - CloudEvents 1.0 transport mapping without redefining the signed envelope
 - a paper-only federation canary state machine spanning Trappers, Proof Drops,
@@ -95,6 +97,8 @@ See [Federation Canary v1](./docs/federation-canary-v1.md) for the bounded ZAO
 interoperability workflow and yellow/red receipt behavior.
 See [Federation Conformance](./docs/federation-conformance.md) for the fixed
 cross-language Ed25519 fixture and required acceptance and rejection results.
+See [Builder Profile v1](./docs/builder-profile-v1.md) for portable judgment,
+privacy, evidence, quorum, and authority boundaries.
 
 ## Portable Contracts
 
@@ -108,6 +112,7 @@ cross-language Ed25519 fixture and required acceptance and rejection results.
 | `PortableReceipt` | Immutable execution reference |
 | `VerificationResult` | Integrity, identity, authorization, and freshness checks |
 | `PortableClaim` | Claim linked to supporting receipts |
+| `BuilderProfilePayload` | Evidence-backed, reviewer-attributed operating judgment |
 
 ## Design Boundaries
 

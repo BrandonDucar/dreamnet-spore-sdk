@@ -22,6 +22,7 @@ export type SporeEnvelopeKind =
   | 'LEASE'
   | 'REVOCATION'
   | 'POLICY'
+  | 'PROFILE'
   | 'SETTLEMENT';
 
 export interface SporeIssuer {
@@ -83,7 +84,7 @@ export interface EnvelopeVerification {
 const SPORE_KINDS = new Set<SporeEnvelopeKind>([
   'OBSERVATION', 'ASSIGNMENT', 'RESULT', 'PROOF_DROP', 'RECEIPT', 'CLAIM',
   'COUNTERCLAIM', 'VERIFICATION', 'CAPABILITY', 'MUTATION', 'LEASE',
-  'REVOCATION', 'POLICY', 'SETTLEMENT',
+  'REVOCATION', 'POLICY', 'PROFILE', 'SETTLEMENT',
 ]);
 
 function assertUniqueStringArray(value: unknown, name: string, requireValue = false): asserts value is string[] {
