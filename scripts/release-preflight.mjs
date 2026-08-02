@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const POLICY_KEYS = new Set([
   'schemaVersion',
   'packageName',
+  'repositoryUrl',
   'candidateVersion',
   'publishTag',
   'forbidLatest',
@@ -77,6 +78,7 @@ export function evaluateReleaseCandidate({
   commandResults,
 }) {
   const checks = [];
+  const packList = Array.isArray(packedFiles) ? packedFiles : [];
   const unknownPolicyFields = policy && typeof policy === 'object'
     ? Object.keys(policy).filter((key) => !POLICY_KEYS.has(key))
     : [];
@@ -87,6 +89,12 @@ export function evaluateReleaseCandidate({
     unknownPolicyFields.length > 0
       ? `Unknown release policy fields: ${unknownPolicyFields.join(', ')}.`
       : 'Release policy schema and fields are recognized.',
+  );
+  addCheck(
+    checks,
+    'repository_identity',
+    packageJson?.repository?.type === 'git' && packageJson?.repository?.url === policy?.repositoryUrl,
+    'Package repository must match the policy-approved public source repository.',
   );
   addCheck(
     checks,
@@ -165,7 +173,7 @@ export function evaluateReleaseCandidate({
   );
 
   const requiredPackedFilesValid = uniqueStrings(policy?.requiredPackedFiles) &&
-    policy.requiredPackedFiles.every((file) => packedFiles.includes(file));
+    policy.requiredPackedFiles.every((file) => packList.includes(file));
   addCheck(
     checks,
     'required_pack_files',
@@ -174,9 +182,10 @@ export function evaluateReleaseCandidate({
   );
 
   const allowedPackedFiles = new Set(policy?.requiredPackedFiles ?? []);
-  const packedPathsValid = Array.isArray(packedFiles) && packedFiles.length > 0 &&
-    packedFiles.length <= policy?.maxPackedFileCount &&
-    packedFiles.every((file) => {
+  const packedPathsValid = packList.length > 0 &&
+    Number.isSafeInteger(policy?.maxPackedFileCount) &&
+    packList.length <= policy.maxPackedFileCount &&
+    packList.every((file) => {
       const normalized = file.replaceAll('\\', '/');
       const allowed = allowedPackedFiles.has(normalized) ||
         policy?.allowedPackedPathPrefixes?.some((prefix) => normalized.startsWith(prefix));

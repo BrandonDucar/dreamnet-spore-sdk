@@ -18,6 +18,10 @@ function fixture() {
     name: '@dreamnet/spore-sdk',
     version: '0.2.0-rc.1',
     license: 'Apache-2.0',
+    repository: {
+      type: 'git',
+      url: 'https://github.com/BrandonDucar/dreamnet-spore-sdk.git',
+    },
     scripts: {
       typecheck: 'tsc --noEmit',
       test: 'tsx --test',
@@ -28,6 +32,7 @@ function fixture() {
   const policy = {
     schemaVersion: 'dreamnet.spore-release-policy.v1',
     packageName: '@dreamnet/spore-sdk',
+    repositoryUrl: 'https://github.com/BrandonDucar/dreamnet-spore-sdk.git',
     candidateVersion: '0.2.0-rc.1',
     publishTag: 'next',
     forbidLatest: true,
@@ -36,7 +41,14 @@ function fixture() {
     requiredAncestorCommits: ancestors,
     rollbackGitRef: ancestors.at(-1),
     requiredPackageScripts: ['typecheck', 'test', 'build', 'prepack'],
-    requiredPackedFiles: ['package.json', 'README.md', 'LICENSE', 'NOTICE'],
+    requiredPackedFiles: [
+      'package.json',
+      'README.md',
+      'LICENSE',
+      'NOTICE',
+      'dist/index.js',
+      'dist/index.d.ts',
+    ],
     allowedPackedPathPrefixes: ['dist/'],
     forbiddenPackedPathPrefixes: ['.env', 'src/', 'test/', 'scripts/'],
     maxPackedFileCount: 250,
