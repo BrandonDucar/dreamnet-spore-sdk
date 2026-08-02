@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -215,14 +215,11 @@ export function evaluateReleaseCandidate({
 }
 
 function run(command, args, cwd, { capture = false } = {}) {
-  const usesWindowsShim = process.platform === 'win32' && (command === 'pnpm' || command === 'npm');
-  const executable = usesWindowsShim ? `${command}.cmd` : command;
-  const result = spawnSync(executable, args, {
+  const result = spawnSync(command, args, {
     cwd,
     encoding: 'utf8',
     stdio: capture ? 'pipe' : 'inherit',
     windowsHide: true,
-    shell: usesWindowsShim,
   });
   return {
     status: result.status,
@@ -230,6 +227,24 @@ function run(command, args, cwd, { capture = false } = {}) {
     stderr: result.stderr ?? '',
     error: result.error,
   };
+}
+
+function resolvePnpmCli() {
+  const cli = process.env.npm_execpath;
+  if (!cli || !existsSync(cli) || !/pnpm(?:\.cjs|\.js)$/i.test(cli)) {
+    throw new Error('Release preflight must be launched through pnpm so its CLI can be resolved safely.');
+  }
+  return cli;
+}
+
+function resolveNpmCli() {
+  const candidates = [
+    path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    path.resolve(path.dirname(process.execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  ];
+  const cli = candidates.find((candidate) => existsSync(candidate));
+  if (!cli) throw new Error('Unable to resolve npm-cli.js without a shell.');
+  return cli;
 }
 
 function gitOutput(root, args) {
@@ -307,15 +322,28 @@ if (invokedPath === fileURLToPath(import.meta.url)) {
     const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
     const policy = JSON.parse(readFileSync(path.join(root, 'release', 'spore-release-policy.json'), 'utf8'));
     const pnpmLock = readFileSync(path.join(root, 'pnpm-lock.yaml'), 'utf8');
+    const pnpmCli = resolvePnpmCli();
+    const npmCli = resolveNpmCli();
     const cleanBefore = gitOutput(root, ['status', '--porcelain']).length === 0;
     const commandResults = [
-      commandCheck('typecheck', 'TypeScript typecheck', 'pnpm', ['typecheck'], root),
-      commandCheck('test', 'Deterministic test suite', 'pnpm', ['test'], root),
-      commandCheck('build', 'Production package build', 'pnpm', ['build'], root),
-      commandCheck('audit', 'Production dependency audit', 'pnpm', ['audit', '--prod', '--audit-level', 'high'], root),
+      commandCheck('typecheck', 'TypeScript typecheck', process.execPath, [pnpmCli, 'typecheck'], root),
+      commandCheck('test', 'Deterministic test suite', process.execPath, [pnpmCli, 'test'], root),
+      commandCheck('build', 'Production package build', process.execPath, [pnpmCli, 'build'], root),
+      commandCheck(
+        'audit',
+        'Production dependency audit',
+        process.execPath,
+        [pnpmCli, 'audit', '--prod', '--audit-level', 'high'],
+        root,
+      ),
     ];
 
-    const packResult = run('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], root, { capture: true });
+    const packResult = run(
+      process.execPath,
+      [npmCli, 'pack', '--dry-run', '--json', '--ignore-scripts'],
+      root,
+      { capture: true },
+    );
     commandResults.push({
       id: 'pack_dry_run',
       label: 'NPM pack dry-run',
