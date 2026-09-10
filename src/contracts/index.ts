@@ -127,6 +127,62 @@ export interface PortableClaim {
 }
 
 /**
+ * 9. ExecutionCapsule (Portable Execution Boundary of a Graph Node)
+ */
+export interface OutputContract {
+  outputName: string;
+  schemaVersion: string;
+}
+
+export interface QuorumPolicy {
+  minimumConfirmations: number;
+  requireFreshContext: boolean;
+  requireIndependentReproduction: boolean;
+  maximumSharedEvidenceLineage: number;
+  requireDifferentModelFamiliesForCriticalClaims: boolean;
+}
+
+export interface ExecutionCapsule {
+  schemaVersion: 'execution-capsule.v1';
+  capsuleId: string;
+  graphId: string;
+  nodeId: string;
+  goal: Record<string, any>;
+  assignment: PortableAssignment;
+  requiredInputs: Array<{ artifactId: string; contentHash: string }>;
+  permittedTools: string[];
+  immutableRules: string[];
+  workspaceLease?: { leaseId: string; path: string; expiresIso: string };
+  contextBudget: { maxTokens: number; contextWindowLimit: number };
+  costBudget: { maxSpendUsd: number };
+  quorumPolicy: QuorumPolicy;
+  parentCapsules: string[];
+  priorReceipts: string[];
+  expectedOutputs: OutputContract[];
+}
+
+/**
+ * 10. VerificationReceipt (Heterogeneous Verification Receipt with Context Lineage)
+ */
+export interface VerificationReceipt {
+  schemaVersion: 'verification-receipt.v1';
+  receiptId: string;
+  verifierId: string;
+  claimId: string;
+  contextHash: string;
+  evidenceHashes: string[];
+  promptTemplateHash: string;
+  modelFamily: string;
+  toolchainHash: string;
+  inheritedFromExecutor: boolean;
+  reproductionPerformed: boolean;
+  verdict: 'CONFIRMED' | 'REJECTED' | 'INDETERMINATE';
+  confidence: number;
+  timestamp: string;
+  digest: string;
+}
+
+/**
  * Deterministic JSON Serialization (DreamNet Sorted JSON v0)
  */
 export function canonicalJsonStringify(obj: any): string {

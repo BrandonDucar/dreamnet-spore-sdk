@@ -6,10 +6,34 @@ import { LiveWeatherSpike } from './live-weather-spike.js';
 import { LiveGithubTrendingSpike } from '../src/spikes/liveGithubTrendingSpike.js';
 import { LiveCoinGeckoMarketSpike } from '../src/spikes/liveCoinGeckoMarketSpike.js';
 import { ZaoProofDropAdapter, ZaoProofDrop } from './adapters/zao-proof-drop.js';
+import { canonicalJsonStringify, computeCanonicalHash } from '../src/contracts/index.js';
 
 console.log('🔴 [DreamNet Spore SDK] 100% LIVE REAL-TIME DATA STREAM TEST (Zero Mocks)...\n');
 
 async function test100PercentLiveSDK() {
+  // 0. Task 1 — Golden Conformance Vector Test (ZAO v0.1 Interop)
+  console.log('🧪 [Task 1 - Golden Conformance Vector] Verifying canonical JSON & SHA-256 hash...');
+  const goldenPayload = {
+    z: 100,
+    a: 'dreamnet-spore',
+    m: {
+      b: true,
+      a: null
+    }
+  };
+  const expectedJson = '{"a":"dreamnet-spore","m":{"a":null,"b":true},"z":100}';
+  const expectedHash = '6b560a8869530ac60f9d3795e55d04240d237010140502f8f7a768d190de013a';
+
+  const actualJson = canonicalJsonStringify(goldenPayload);
+  const actualHash = computeCanonicalHash(goldenPayload);
+
+  if (actualJson !== expectedJson || actualHash !== expectedHash) {
+    throw new Error(`❌ Golden Conformance Vector Failed! Got JSON "${actualJson}" and HASH "${actualHash}"`);
+  }
+  console.log(`   Canonical String: ${actualJson}`);
+  console.log(`   SHA-256 Hash:     ${actualHash}`);
+  console.log('   Status:           GOLDEN CONFORMANCE VERIFIED (PASSED)\n');
+
   // 1. Initialize Governor & Atomic Spend Reservation
   const governor = new ConfigurableGovernor({ dailyCapUsd: 250.0 });
   const reservation = governor.reserveSpend(50.00);

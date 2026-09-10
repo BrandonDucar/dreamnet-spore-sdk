@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      canonicalize:
+        specifier: ^5.0.0
+        version: 5.0.0
     devDependencies:
       '@types/node':
         specifier: ^20.12.0
@@ -179,6 +183,11 @@ packages:
   '@types/node@20.19.43':
     resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
 
+  canonicalize@5.0.0:
+    resolution: {integrity: sha512-O/NCg79G0/TWoD3Fo6scOMfP4p7/TsxRXVmRo9mEfD6h/5y5o1wtVbKyBO0E2i7FEcqe5tRijyAH/IWHIHMH4w==}
+    engines: {node: '>=22'}
+    hasBin: true
+
   esbuild@0.28.1:
     resolution: {integrity: sha512-HrJrvZv5ayxBzPfwphOoNzkzOIIlifzk0KJrGK2c8R4+LKpMtpYLQeUdjnwjWv/LZlkH2laZk+4w78pi99D4Vw==}
     engines: {node: '>=18'}
@@ -285,6 +294,8 @@ snapshots:
   '@types/node@20.19.43':
     dependencies:
       undici-types: 6.21.0
+
+  canonicalize@5.0.0: {}
 
   esbuild@0.28.1:
     optionalDependencies:

@@ -10,4 +10,4 @@ export * from './adapters/receiptAdapter.js';
 export * from './adapters/x402Adapter.js';
 export * from './spikes/liveGithubTrendingSpike.js';
 export * from './spikes/liveCoinGeckoMarketSpike.js';
-
+export * from './federation/index.js';
