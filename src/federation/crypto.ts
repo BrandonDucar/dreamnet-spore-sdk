@@ -8,18 +8,14 @@
  */
 
 import crypto, { type KeyObject } from 'node:crypto';
-import canonicalizePkg from 'canonicalize';
+import { canonicalizeJson } from '../canonicalization.js';
 import type { SporeKeypair } from './types.js';
 
 /**
  * Standard RFC 8785 Canonicalization
  */
 export function canonicalizeRfc8785(obj: unknown): string {
-  const result = canonicalizePkg(obj);
-  if (result === undefined) {
-    throw new Error('CANONICALIZATION_FAILED: Value cannot be canonicalized to JSON (undefined or symbol)');
-  }
-  return result;
+  return canonicalizeJson(obj);
 }
 
 /**
@@ -74,6 +70,7 @@ export function verifyRawSignature(
   signatureHex: string
 ): boolean {
   try {
+    if (!/^[a-f0-9]{64}$/.test(hashHex) || !/^[a-f0-9]{128}$/.test(signatureHex)) return false;
     const keyObj = typeof publicKey === 'string'
       ? crypto.createPublicKey(publicKey)
       : publicKey;

@@ -41,14 +41,47 @@ Spore v1 enforces strict wire-level invariants across all participating systems:
 2. **Deterministic Canonicalization (RFC 8785 / JCS)**:
    The envelope body (all fields except `signature` and `id`) is serialized using the RFC 8785 JSON Canonicalization Scheme.
 3. **Cryptographic Identity (`id`)**:
-   `id` is the raw hex representation of the binary SHA-256 hash over the RFC 8785 canonical body. Any alteration in whitespace, key ordering, or payload data triggers `DIGEST_MISMATCH`.
+   `id` is `sha256:` followed by the lowercase SHA-256 hex digest of the RFC 8785 canonical body. Whitespace and object key order do not change the digest; changed JSON values do.
 4. **Signature Verification**:
-   The Ed25519 signature is computed over the raw UTF-8 bytes of the canonical body using the issuer's private key and verified against their advertised public key.
+   The Ed25519 signature is computed over the **32 binary SHA-256 digest bytes**, NOT the canonical JSON bytes and NOT the hex text. It is encoded as exactly 128 lowercase hex characters. Verification requires a trusted issuer-to-key binding, not merely a key advertised by the sender.
 5. **Freshness & Expiry**:
    Envelopes past `expires_at` (+ configurable clock skew) trigger `ENVELOPE_EXPIRED`.
 6. **Idempotent Retry vs Replay Prevention**:
    - Matching `nonce` + matching `id`: Allowed as an **idempotent retry** (HTTP 200).
    - Matching `nonce` + differing `id`: Rejected as an adversarial replay (HTTP 409 `409_REPLAY_ATTACK_DETECTED`).
+
+### Verification is not authority
+
+Receiving a valid envelope confers zero authority. Every verifier result reports
+`authorization: NOT_EVALUATED`. The receiving application must independently enforce
+identity/key binding, intended recipient, current admission, a scoped unexpired and
+non-revoked AuthorityLease, resource budgets, and an atomic durable nonce claim before
+performing effects. A valid manifest digest proves content consistency, not trusted identity.
+
+`consumedNoncesStore` is optional process-local testing support for one trusted peer/context.
+Validation now synchronously records successful nonces in that Map; callers must not
+assume a fresh Map provides restart or multi-process replay protection. At 10,000 entries
+it fails closed. Production must use its existing durable admission/replay service and
+return cached receipts for duplicate deliveries. Never execute effects for `IDEMPOTENT_RETRY`.
+
+Use `expectedIssuer`, `expectedRecipient`, and `expectedKeyId` from trusted receiver
+configuration, never from the incoming payload. Expiry is exclusive, timestamps must
+be UTC ISO strings, and envelope lifetime is limited to 24 hours (or a smaller configured
+`maxLifetimeMs`). `maxClockSkewMs` cannot exceed five minutes.
+
+### Canonical input profile
+
+Independent implementers can use [the complete signed reference vector](fixtures/spore-envelope-v1.json).
+It contains canonical JSON, digest/signing preimage, public key, signature, and fixed
+verification time. It is an inert public test identity, never a production trust root.
+
+Observation and federation now share one JSON-only canonicalization implementation.
+Finite numbers (including negative zero), Unicode scalar strings, dense arrays, and
+plain objects are accepted. Undefined, Date instances, sparse arrays, hidden fields,
+accessors, cycles, and invalid Unicode are rejected. Limits: depth 64, 100,000 values,
+and 1 MiB canonical UTF-8 output. Historical algorithm labels and hashes remain intact;
+supported ordinary JSON produces the same bytes. Unsupported JavaScript extensions
+are not silently normalized. This tightening is intentional.
 
 ---
 

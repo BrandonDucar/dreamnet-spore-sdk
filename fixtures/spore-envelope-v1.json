@@ -1,0 +1,30 @@
+{
+  "classification": "PUBLIC_TEST_VECTOR_NOT_A_TRUSTED_ISSUER",
+  "protocol": "spore-envelope-v1",
+  "canonical_json": "{\"created_at\":\"2026-09-27T19:59:00.000Z\",\"expires_at\":\"2026-09-27T20:04:00.000Z\",\"issuer\":\"did:example:spore-test\",\"nonce\":\"public-offline-vector-0001\",\"payload\":{\"classification\":\"TEST_ONLY_NO_AUTHORITY\",\"operation\":\"inert_echo\",\"value\":\"hello\"},\"recipient\":\"did:example:receiver\",\"type\":\"mission\",\"v\":\"spore-envelope-v1\"}",
+  "digest_hex": "9fb84f167daee29653b6ca5924bc45b117fa430afc2062871c312867239f2b8c",
+  "signing_preimage_hex": "9fb84f167daee29653b6ca5924bc45b117fa430afc2062871c312867239f2b8c",
+  "signing_rule": "Ed25519 over 32 binary SHA-256 digest bytes",
+  "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEArcVLz4FA8E+kvwgXqTZ/B0essuM1L7qi0C1U11YUQ6c=\n-----END PUBLIC KEY-----\n",
+  "envelope": {
+    "v": "spore-envelope-v1",
+    "type": "mission",
+    "issuer": "did:example:spore-test",
+    "recipient": "did:example:receiver",
+    "nonce": "public-offline-vector-0001",
+    "created_at": "2026-09-27T19:59:00.000Z",
+    "expires_at": "2026-09-27T20:04:00.000Z",
+    "payload": {
+      "classification": "TEST_ONLY_NO_AUTHORITY",
+      "operation": "inert_echo",
+      "value": "hello"
+    },
+    "id": "sha256:9fb84f167daee29653b6ca5924bc45b117fa430afc2062871c312867239f2b8c",
+    "signature": "7060a73a783f052fd860df0e009bfd7bc1f989a111aa803637a0106966c26b464ee3f8097422f08ecbbc321f39f5ebdadd91f466bb21750fa6d8a1a323325809"
+  },
+  "verification_time": "2026-09-27T20:00:00.000Z",
+  "expected": {
+    "valid": true,
+    "authorization": "NOT_EVALUATED"
+  }
+}
