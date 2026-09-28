@@ -1,6 +1,6 @@
 {
   "name": "@dreamnet/spore-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Public Interoperability Kit & Spore Federation Node Runtime for Independent Agent Civilizations",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -13,6 +13,8 @@
   },
   "files": [
     "dist",
+    "fixtures",
+    "docs/SECURITY_HARDENING_2026-09-27.md",
     "README.md",
     "LICENSE",
     "NOTICE"
@@ -33,7 +35,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "test": "npx tsx examples/conformance-suite.ts",
+    "prepack": "pnpm typecheck && pnpm test && pnpm build",
+    "test": "tsx examples/conformance-suite.ts && tsx --test test/*.test.ts",
     "test:conformance": "npx tsx examples/conformance-suite.ts",
     "test:stream": "npx tsx examples/test-spore-interop.ts"
   },

@@ -94,6 +94,7 @@ export interface SporeKeypair {
 
 export interface SporeVerificationResult {
   valid: boolean;
+  authorization?: 'NOT_EVALUATED';
   code?: string;
   error?: string;
   computedHash?: string;

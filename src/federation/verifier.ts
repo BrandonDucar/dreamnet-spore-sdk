@@ -30,7 +30,12 @@ export const ALLOWED_TOP_LEVEL_FIELDS = new Set([
 export interface ValidationOptions {
   nowMs?: number;
   maxClockSkewMs?: number;
-  consumedNoncesStore?: Map<string, string>; // nonce -> envelopeId
+  maxLifetimeMs?: number;
+  expectedIssuer?: string;
+  expectedRecipient?: string;
+  expectedKeyId?: string;
+  // Single trusted peer/context, process-local only. Successful validation consumes the nonce.
+  consumedNoncesStore?: Map<string, string>;
 }
 
 /**
@@ -41,6 +46,14 @@ export function validateSporeEnvelope(
   envelope: unknown,
   options: ValidationOptions = {}
 ): SporeVerificationResult {
+  try {
+    return { ...validate(counterpartyPublicKey, envelope, options), authorization: 'NOT_EVALUATED' };
+  } catch {
+    return { valid: false, code: 'MALFORMED_ENVELOPE', error: 'Envelope is outside the supported JSON domain', authorization: 'NOT_EVALUATED' };
+  }
+}
+
+function validate(counterpartyPublicKey: KeyObject | string, envelope: unknown, options: ValidationOptions): SporeVerificationResult {
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
     return {
       valid: false,
@@ -50,6 +63,8 @@ export function validateSporeEnvelope(
   }
 
   const env = envelope as Record<string, unknown>;
+  // Reject accessors, cycles, non-JSON values, and excessive resource use before inspecting fields.
+  canonicalizeRfc8785(env);
 
   // 1. Vector 1: Unknown top-level field rejection (Fail-closed)
   for (const key of Object.keys(env)) {
@@ -82,13 +97,37 @@ export function validateSporeEnvelope(
     };
   }
 
+  const stringFields = ['type', 'issuer', 'recipient', 'nonce', 'created_at', 'expires_at', 'id', 'signature'];
+  if (stringFields.some(field => typeof env[field] !== 'string' || !(env[field] as string).trim() || (env[field] as string).length > 2048) ||
+      (env.key_id !== undefined && (typeof env.key_id !== 'string' || !env.key_id.trim() || env.key_id.length > 2048)) ||
+      !['mission', 'receipt', 'capability_query', 'event'].includes(env.type as string) ||
+      !env.payload || typeof env.payload !== 'object' || Array.isArray(env.payload) ||
+      !/^sha256:[a-f0-9]{64}$/.test(env.id as string) || !/^[a-f0-9]{128}$/.test(env.signature as string)) {
+    return { valid: false, code: 'MALFORMED_ENVELOPE', error: 'Envelope field types or encodings are invalid' };
+  }
+  for (const [option, field] of [['expectedIssuer', 'issuer'], ['expectedRecipient', 'recipient'], ['expectedKeyId', 'key_id']] as const) {
+    if (options[option] !== undefined && (typeof options[option] !== 'string' || !options[option] || options[option] !== env[field])) {
+      return { valid: false, code: 'IDENTITY_CONTEXT_MISMATCH', error: `Envelope ${field} does not match trusted context` };
+    }
+  }
+
   const now = options.nowMs ?? Date.now();
   const maxSkew = options.maxClockSkewMs ?? 60_000;
+  const maxLifetime = options.maxLifetimeMs ?? 86_400_000;
   const expiresAtMs = new Date(env.expires_at as string).getTime();
   const createdAtMs = new Date(env.created_at as string).getTime();
+  if (!Number.isFinite(now) || !Number.isFinite(maxSkew) || maxSkew < 0 || maxSkew > 300_000 ||
+      !Number.isFinite(maxLifetime) || maxLifetime <= 0 || maxLifetime > 86_400_000) {
+    return { valid: false, code: 'INVALID_VERIFICATION_POLICY', error: 'Invalid verification clock or lifetime limits' };
+  }
+  if (!Number.isFinite(createdAtMs) || !Number.isFinite(expiresAtMs) ||
+      new Date(createdAtMs).toISOString() !== env.created_at || new Date(expiresAtMs).toISOString() !== env.expires_at ||
+      expiresAtMs <= createdAtMs || expiresAtMs - createdAtMs > maxLifetime) {
+    return { valid: false, code: 'INVALID_TIMESTAMP', error: 'Envelope timestamps must be ordered UTC ISO dates within the lifetime limit' };
+  }
 
   // 2. Vector 4: Expiry enforcement
-  if (expiresAtMs + maxSkew < now) {
+  if (expiresAtMs + maxSkew <= now) {
     return {
       valid: false,
       code: 'ENVELOPE_EXPIRED',
@@ -151,6 +190,11 @@ export function validateSporeEnvelope(
         };
       }
     }
+    // Atomic only within this synchronous invocation/process, never a durable admission guarantee.
+    if (options.consumedNoncesStore.size >= 10_000) {
+      return { valid: false, code: 'REPLAY_STORE_FULL', error: 'Replay store capacity reached; do not clear live claims to bypass it' };
+    }
+    options.consumedNoncesStore.set(nonce, id as string);
   }
 
   return {
